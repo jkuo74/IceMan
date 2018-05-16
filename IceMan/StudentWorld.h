@@ -23,14 +23,15 @@ public:
 	virtual int init()
 	{
 		Hero = std::make_shared<IceMan>();//add player
-		for (int n = 0; n < 64; n++)
-		{
+		for (int n = 0; n < 64; n++){
 			std::vector<std::shared_ptr<Ice>> columns;
 			for (int m = 0; m < 64; m++)
 			{
-				columns.push_back(std::make_shared<Ice>(n,m));
+				if ((n <= 30 || n > 34) || m < 4 ) {
+					columns.push_back(std::make_shared<Ice>(n, m));
+				}
 			}
-			IceBlocks.push_back(columns);
+				IceBlocks.push_back(columns);
 		}//add ice
 		/*
 		for (int n = 0; n < 4; n++)
