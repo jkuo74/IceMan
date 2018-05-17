@@ -25,4 +25,13 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord)
 
 }
 
-// Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
+StudentWorld::~StudentWorld() {
+//	int sum = 0;
+	for (std::vector<std::shared_ptr<Ice>> & line : IceBlocks) {
+		for (std::shared_ptr<Ice> & block : line) {
+			block = nullptr;
+//			sum++;
+		}
+	}
+//	cerr << "sum " << sum << endl;
+}
