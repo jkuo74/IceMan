@@ -25,13 +25,24 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord)
 
 }
 
-StudentWorld::~StudentWorld() {
-//	int sum = 0;
+void StudentWorld::cleanUp() {
+	++current_level_number; //???????????????????
+	Hero = nullptr;
+	//	int sum = 0;
 	for (std::vector<std::shared_ptr<Ice>> & line : IceBlocks) {
 		for (std::shared_ptr<Ice> & block : line) {
 			block = nullptr;
-//			sum++;
+			//			sum++;
 		}
 	}
-//	cerr << "sum " << sum << endl;
+	//	cerr << "sum " << sum << endl;
+	for (auto & line : Objects) {
+		for (auto & block : line) {
+			block = nullptr;
+			//			sum++;
+		}
+	}
+}
+StudentWorld::~StudentWorld() {
+	cleanUp();
 }
