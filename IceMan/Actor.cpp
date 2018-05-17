@@ -1,3 +1,4 @@
+
 #include "Actor.h"
 #include "StudentWorld.h"
 
@@ -14,7 +15,7 @@ bool Actor::isVisible()
 	return visible;
 }
 
-
+Actor::~Actor(){}
 Person::Person(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth) : Actor(ID, x_coord, y_coord, right, 1.0, 0), health_points(10)
 {
 
@@ -27,7 +28,7 @@ int Person::getHealth()
 {
 	return health_points;
 }
-
+Person::~Person(){}
 
 IceMan::IceMan(): Person(IID_PLAYER, 30, 60, right)
 {
@@ -65,13 +66,18 @@ void IceMan::move()
 		}
 	}
 }
-
+IceMan::~IceMan() {}
 
 Ice::Ice(int x_coord, int y_coord) : Actor(IID_ICE, x_coord, y_coord, right, 0.25, 3)
 {
 	if (y_coord >= 60)
 		setVisible(false);
 }
+Protester::Protester() : Person(IID_PROTESTER, 40,60,left) {
+
+}
+void Protester::move(){}
+Protester::~Protester(){}
 /*Boulder::Boulder(int x_coord, int y_coord) : Actor(IID_BOULDER, x_coord, y_coord, right, 1.0, 1)
 {
 }
