@@ -1,4 +1,4 @@
-
+;
 #ifndef ACTOR_H_
 #define ACTOR_H_
 
@@ -37,7 +37,7 @@ public:
 	void move();
 	void doSomething();
 	void getWorld(const StudentWorld * sw);
-	~IceMan()
+	~IceMan();
 private:
 	int hp;
 	static const StudentWorld * SW;
