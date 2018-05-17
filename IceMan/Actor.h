@@ -7,32 +7,49 @@ class Actor : public GraphObject
 {
 public:
 	Actor(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth);
+	int getState();
+	//virtual void doSomething() = 0;
+	bool isVisible();
+
+private:
+	int state;
+	bool visible;
 };
 
 class Person : public Actor
 {
 public:
-	int health;
 	Person(int ID, int x_coord, int y_coord, GraphObject::Direction face = right, double size = 1.0, unsigned int depth = 0);
-	virtual void move() = 0;
+	//virtual void move() = 0;
+	void annoy();
+	int getHealth();
+
+private:
+	int health_points;
+
+
 };
 class IceMan : public Person
 {
 public:
 	IceMan();
 	void move();
+	void doSomething();
+	void getWorld(const StudentWorld * sw);
+
 private:
 	int hp;
+	static const StudentWorld * SW;
 
 };
-class Regular_Protester : public Person
+/*class Regular_Protester : public Person
 {
 public:
 };
 class Hardcore_Protester : public Regular_Protester
 {
 public:
-};
+};*/
 
 
 
