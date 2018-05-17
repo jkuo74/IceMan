@@ -77,10 +77,7 @@ public:
 		return GWSTATUS_PLAYER_DIED;
 	}
 
-	virtual void cleanUp()
-	{
-		++current_level_number;
-	}
+	virtual void cleanUp();
 	~StudentWorld();
 private:
 	int current_level_number;
