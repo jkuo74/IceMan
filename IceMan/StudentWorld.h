@@ -23,6 +23,7 @@ public:
 	virtual int init()
 	{
 		Hero = std::make_shared<IceMan>();//add player
+		Hero->getWorld(this);
 		for (int n = 0; n < 64; n++){
 			std::vector<std::shared_ptr<Ice>> columns;
 			for (int m = 0; m < 64; m++)
@@ -63,6 +64,11 @@ public:
 
 	virtual int move()
 	{
+		if (Hero->getHealth() != 0)
+		{
+			Hero->move();
+			return GWSTATUS_CONTINUE_GAME;
+		}
 		return GWSTATUS_CONTINUE_GAME;
 		// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
 		// Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
