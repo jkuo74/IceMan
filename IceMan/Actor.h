@@ -1,3 +1,4 @@
+
 #ifndef ACTOR_H_
 #define ACTOR_H_
 
@@ -10,7 +11,7 @@ public:
 	int getState();
 	//virtual void doSomething() = 0;
 	bool isVisible();
-
+	~Actor();
 private:
 	int state;
 	bool visible;
@@ -23,7 +24,7 @@ public:
 	//virtual void move() = 0;
 	void annoy();
 	int getHealth();
-
+	~Person();
 private:
 	int health_points;
 
@@ -36,15 +37,17 @@ public:
 	void move();
 	void doSomething();
 	void getWorld(const StudentWorld * sw);
-
+	~IceMan()
 private:
 	int hp;
 	static const StudentWorld * SW;
 
 };
-/*class Regular_Protester : public Person
-{
+class Protester : public Person {
 public:
+	Protester();
+	void move();
+	~Protester();
 };
 class Hardcore_Protester : public Regular_Protester
 {
