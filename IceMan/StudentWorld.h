@@ -41,6 +41,7 @@ public:
 			Objects.push_back(temp_object);
 		}
 
+
 		int B = std::min((current_level_number / 2) + 2, 9);
 		for (int n = 0; n < B; n++)
 		{
@@ -80,7 +81,7 @@ public:
 	{
 		++current_level_number;
 	}
-
+	~StudentWorld();
 private:
 	int current_level_number;
 	std::vector<std::vector<std::shared_ptr<Ice>>> IceBlocks;
