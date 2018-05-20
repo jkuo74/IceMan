@@ -2,13 +2,15 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
+class StudentWorld;
+
 
 class Actor : public GraphObject
 {
 public:
 	Actor(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth);
 	int getState();
-	//virtual void doSomething() = 0;
+	void doSomething();
 	bool isVisible();
 	~Actor();
 private:
@@ -20,14 +22,12 @@ class Person : public Actor
 {
 public:
 	Person(int ID, int x_coord, int y_coord, GraphObject::Direction face = right, double size = 1.0, unsigned int depth = 0);
-	//virtual void move() = 0;
+	virtual void move() = 0;
 	void annoy();
 	int getHealth();
 	~Person();
 private:
 	int health_points;
-
-
 };
 class IceMan : public Person
 {
@@ -35,14 +35,9 @@ public:
 	IceMan();
 	void move();
 	void doSomething();
-	void getWorld(const StudentWorld * sw);
 	~IceMan();
-private:
-	int hp;
-	static const StudentWorld * SW;
-
 };
-class Protester : public Person {
+/*class Protester : public Person {
 public:
 	Protester();
 	void move();
@@ -52,9 +47,6 @@ class Hardcore_Protester : public Regular_Protester
 {
 public:
 };*/
-
-
-
 
 
 class Ice : public Actor
