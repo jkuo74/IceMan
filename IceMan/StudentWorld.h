@@ -31,7 +31,7 @@ public:
 private:
 	int current_level_number;
 	static StudentWorld * SWP;
-	std::vector<std::vector<std::shared_ptr<Ice>>> IceBlocks;
+	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
 	std::vector<std::vector<std::shared_ptr<Actor>>> Objects;
 };
