@@ -4,16 +4,16 @@
 #include "GraphObject.h"
 class StudentWorld;
 
-
 class Actor : public GraphObject
 {
 public:
-	Actor(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth);
+	Actor(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth, StudentWorld * swp);
 	int getState();
-	void doSomething();
+	virtual void doSomething() = 0;
 	bool isVisible();
-	~Actor();
-private:
+
+protected:
+	StudentWorld * SWP;
 	int state;
 	bool visible;
 };
@@ -21,33 +21,29 @@ private:
 class Person : public Actor
 {
 public:
-	Person(int ID, int x_coord, int y_coord, GraphObject::Direction face = right, double size = 1.0, unsigned int depth = 0);
+	Person(int ID, int x_coord, int y_coord, Direction face = right, double size = 1.0, unsigned int depth = 0, StudentWorld * swp = nullptr);
 	virtual void move() = 0;
 	void annoy();
 	int getHealth();
-	~Person();
-private:
+
+protected:
 	int health_points;
 };
 class IceMan : public Person
 {
 public:
-	IceMan();
+	IceMan(StudentWorld * swp = nullptr);
 	void move();
-	void doSomething();
-	~IceMan();
+	virtual void doSomething();
 };
-/*class Protester : public Person {
+/*class Regular_Protester : public Person
+{
 public:
-	Protester();
-	void move();
-	~Protester();
 };
 class Hardcore_Protester : public Regular_Protester
 {
 public:
 };*/
-
 class Thing :public Actor
 {
 public:
@@ -56,7 +52,6 @@ public:
 protected:
 	int tick;
 };
-
 class Ice : public Thing
 {
 public:
@@ -70,13 +65,14 @@ public:
 	Boulder(int x_coord, int y_coord, StudentWorld * swp);
 	virtual void doSomething();
 };
-/*
-class Gold_Nugget : public Actor
+/*class Gold_Nugget : public Actor
 {
 public:	
-	Gold_Nugget(int x_coord, int y_coord);
-};
-class Oil_Barrel : public Actor
+	Gold_Nugget(int x_coord, int y_coord, StudentWorld * swp);
+	virtual void doSomething();
+
+};*/
+/*class Oil_Barrel : public Actor
 {
 public:
 	Oil_Barrel(int)
