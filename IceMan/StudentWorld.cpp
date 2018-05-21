@@ -101,16 +101,21 @@ int StudentWorld::move()
 	return GWSTATUS_PLAYER_DIED;
 }
 
-void StudentWorld::cleanUp()
-{
+void StudentWorld::cleanUp() {
 	Hero = nullptr;
 	++current_level_number;
-	for (auto it1 = IceBlocks.begin(); it1 != IceBlocks.end(); it1++)
-		for (auto it2 = it1->begin(); it2 != it1->end(); it2++)
-		{
-			delete *it2;
-			*it2 = nullptr;
+	for (std::vector<Ice*> & line : IceBlocks) {
+		for (Ice* & block : line) {
+			delete block;
+			block = nullptr;
 		}
+		
+	}
+	for (auto & line : Objects) {
+		for (auto & block : line) {
+			block = nullptr;
+		}
+	}
 }
 
 StudentWorld::~StudentWorld() {
