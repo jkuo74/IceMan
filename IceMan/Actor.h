@@ -48,18 +48,29 @@ class Hardcore_Protester : public Regular_Protester
 public:
 };*/
 
-
-class Ice : public Actor
+class Thing :public Actor
 {
 public:
-	Ice(int x, int y);
+	Thing(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp = nullptr);
+	virtual void doSomething() {}
+protected:
+	int tick;
+};
+
+class Ice : public Thing
+{
+public:
+	Ice(int x, int y, StudentWorld * swp = nullptr);
+	virtual void doSomething() {}
+};
+
+class Boulder : public Thing
+{
+public:
+	Boulder(int x_coord, int y_coord, StudentWorld * swp);
+	virtual void doSomething();
 };
 /*
-class Boulder : public Actor
-{
-public:
-	Boulder(int x_coord, int y_coord);
-};
 class Gold_Nugget : public Actor
 {
 public:	
