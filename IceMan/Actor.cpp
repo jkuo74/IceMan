@@ -1,9 +1,8 @@
-
 #include "Actor.h"
 #include "StudentWorld.h"
 
-Actor::Actor(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth):
-	GraphObject(ID, x_coord, y_coord, face, size, depth)
+Actor::Actor(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp):
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp)
 {
 	setVisible(true);
 }
@@ -15,9 +14,8 @@ bool Actor::isVisible()
 {
 	return visible;
 }
-Actor::~Actor(){}
-Person::Person(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth): 
-	Actor(ID, x_coord, y_coord, right, size, depth), health_points(10)
+Person::Person(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth, StudentWorld * swp):
+	Actor(ID, x_coord, y_coord, right, size, depth, swp), health_points(10)
 {
 
 }
@@ -29,10 +27,10 @@ int Person::getHealth()
 {
 	return health_points;
 }
-Person::~Person(){}
 
-IceMan::IceMan():
-	Person(IID_PLAYER, 30, 60, right, 1.0, 0)
+
+IceMan::IceMan(StudentWorld * swp):
+	Person(IID_PLAYER, 30, 60, right, 1.0, 0, swp)
 {
 }
 void IceMan::doSomething()
@@ -42,9 +40,9 @@ void IceMan::doSomething()
 
 void IceMan::move()
 {
-	StudentWorld* swp = StudentWorld::getInstance();
+	SWP->removeIce(getX(), getY());
 	int ch;
-	if (swp->getKey(ch))
+	if (SWP->getKey(ch))
 	{
 		int x_pos = getX();
 		int y_pos = getY();
@@ -86,15 +84,7 @@ void IceMan::move()
 		}
 	}
 }
-
-IceMan::~IceMan() {}
-
-Ice::Ice(int x_coord, int y_coord):
-	Actor(IID_ICE, x_coord, y_coord, right, 0.25, 3)
-{
-
-}
-
+IceMan::~IceMan(){}
 Thing::Thing(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp):
 	Actor(ID, x_coord, y_coord, face, size, depth, swp), tick(0)
 {
@@ -113,41 +103,39 @@ Boulder::Boulder(int x_coord, int y_coord, StudentWorld * swp):
 }
 void Boulder::doSomething()
 {
-	if (state == 0)
+	if (getY() != -1)
+		moveTo(getX(), getY() - 1);
+	if (state != 3)
 	{
-		if (!SWP->checkBelow(getX(), getY()))
+		if (state == 0)
 		{
-			SWP->playSound(IID_BOULDER);
-
-			state = 1;
+			if (SWP->checkBelow(getX(), getY()))
+			{
+				SWP->playSound(IID_BOULDER);
+				state = 1;
+			}
 		}
-	}
-	else if (state == 1)
-	{
-		tick++;
-		if (tick == 30)
+		else if (state == 1)
 		{
-			state = 2;
-			SWP->playSound(IID_BOULDER);
+			tick++;
+			if (tick == 30)
+			{
+				state = 2;
+				SWP->playSound(IID_BOULDER);
+			}
 		}
-	}
-	else if (state == 2)
-	{
-
+		else if (state == 2)
+		{
+			moveTo(getX(), getY() - 1);
+			if (getY() == -1)
+				state == 3;
+		}
 	}
 
 }
-
-
-/*Protester::Protester() : Person(IID_PROTESTER, 40,60,left) {
-
-}
-void Protester::move(){}
-Protester::~Protester(){}
-Gold_Nugget::Gold_Nugget(int x_coord, int y_coord) : Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2)
+/*Gold_Nugget::Gold_Nugget(int x_coord, int y_coord, StudentWorld * swp):
+	Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2, swp)
 {
-
 }*/
 
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
-
