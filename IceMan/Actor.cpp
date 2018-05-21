@@ -94,14 +94,56 @@ Ice::Ice(int x_coord, int y_coord):
 {
 
 }
+
+Thing::Thing(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp):
+	Actor(ID, x_coord, y_coord, face, size, depth, swp), tick(0)
+{
+
+}
+
+Ice::Ice(int x_coord, int y_coord, StudentWorld * swp):
+	Thing(IID_ICE, x_coord, y_coord, right, 0.25, 3, swp)
+{
+
+}
+
+Boulder::Boulder(int x_coord, int y_coord, StudentWorld * swp):
+	Thing(IID_BOULDER, x_coord, y_coord, right, 1.0, 1, swp)
+{
+}
+void Boulder::doSomething()
+{
+	if (state == 0)
+	{
+		if (!SWP->checkBelow(getX(), getY()))
+		{
+			SWP->playSound(IID_BOULDER);
+
+			state = 1;
+		}
+	}
+	else if (state == 1)
+	{
+		tick++;
+		if (tick == 30)
+		{
+			state = 2;
+			SWP->playSound(IID_BOULDER);
+		}
+	}
+	else if (state == 2)
+	{
+
+	}
+
+}
+
+
 /*Protester::Protester() : Person(IID_PROTESTER, 40,60,left) {
 
 }
 void Protester::move(){}
 Protester::~Protester(){}
-Boulder::Boulder(int x_coord, int y_coord) : Actor(IID_BOULDER, x_coord, y_coord, right, 1.0, 1)
-{
-}
 Gold_Nugget::Gold_Nugget(int x_coord, int y_coord) : Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2)
 {
 
