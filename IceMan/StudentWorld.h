@@ -16,18 +16,27 @@ class StudentWorld : public GameWorld
 {
 public:
 	StudentWorld(std::string assetDir);
-	
+
 	bool by_itself(const int & x_coord, const int & y_coord);//checks that no object is placed within 6 blocks apart
-	
+
 	virtual int init();
-	
+
 	virtual int move();
 
+	void updateDisplayText();
+
+	void removeIce(const int & x_coord, const int & y_coord);
+
+	bool IceBelow(const int & x_coord, const int & y_coord);
+
+	bool BoulderBelow(const int & x_coord, const int & y_coord);
+
 	virtual void cleanUp();
-	
+
 	static StudentWorld* getInstance();
-	
+
 	~StudentWorld();
+
 private:
 	int current_level_number;
 	static StudentWorld * SWP;
