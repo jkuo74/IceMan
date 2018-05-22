@@ -7,10 +7,11 @@ class StudentWorld;
 class Actor : public GraphObject
 {
 public:
-	Actor(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth, StudentWorld * swp);
+	Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
 	int getState();
 	virtual void doSomething() = 0;
 	bool isVisible();
+	bool isAlive();
 
 protected:
 	StudentWorld * SWP;
@@ -21,7 +22,7 @@ protected:
 class Person : public Actor
 {
 public:
-	Person(int ID, int x_coord, int y_coord, Direction face = right, double size = 1.0, unsigned int depth = 0, StudentWorld * swp = nullptr);
+	Person(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face = right, const double & size = 1.0, const unsigned int & depth = 0, StudentWorld * swp = nullptr);
 	virtual void move() = 0;
 	void annoy();
 	int getHealth();
@@ -47,7 +48,7 @@ public:
 class Thing :public Actor
 {
 public:
-	Thing(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp = nullptr);
+	Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
 protected:
 	int tick;
