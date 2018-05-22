@@ -12,6 +12,7 @@ public:
 	virtual void doSomething() = 0;
 	bool isVisible();
 	bool isAlive();
+	virtual ~Actor() { SWP = nullptr; };
 
 protected:
 	StudentWorld * SWP;
@@ -26,6 +27,7 @@ public:
 	virtual void move() = 0;
 	void annoy();
 	int getHealth();
+	virtual ~Person() {};
 
 protected:
 	int health_points;
@@ -36,6 +38,7 @@ public:
 	IceMan(StudentWorld * swp = nullptr);
 	void move();
 	virtual void doSomething();
+	virtual ~IceMan() {};
 };
 /*class Regular_Protester : public Person
 {
@@ -50,6 +53,7 @@ class Thing :public Actor
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
+	virtual ~Thing() {};
 protected:
 	int tick;
 };
@@ -58,6 +62,8 @@ class Ice : public Thing
 public:
 	Ice(int x, int y, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
+	virtual ~Ice() {};
+
 };
 
 class Boulder : public Thing
@@ -65,6 +71,8 @@ class Boulder : public Thing
 public:
 	Boulder(int x_coord, int y_coord, StudentWorld * swp);
 	virtual void doSomething();
+	virtual ~Boulder() {};
+
 };
 /*class Gold_Nugget : public Actor
 {
