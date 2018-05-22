@@ -23,7 +23,7 @@ public:
 
 	virtual int move();
 
-	void updateDisplayText();
+	//void updateDisplayText();
 
 	void removeIce(const int & x_coord, const int & y_coord);
 
