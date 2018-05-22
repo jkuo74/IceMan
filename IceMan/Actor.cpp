@@ -1,8 +1,15 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-Actor::Actor(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp):
-	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp)
+
+const static int ALIVE = 0;
+const static int PERMANENT = 1;
+const static int TEMPORARY = 2;
+const static int FALLING = 3;
+const static int DEAD = 4;
+
+Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(0)
 {
 	setVisible(true);
 }
@@ -14,7 +21,11 @@ bool Actor::isVisible()
 {
 	return visible;
 }
-Person::Person(int ID, int x_coord, int y_coord, GraphObject::Direction face, double size, unsigned int depth, StudentWorld * swp):
+bool Actor::isAlive()
+{
+	return state != DEAD;
+}
+Person::Person(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
 	Actor(ID, x_coord, y_coord, right, size, depth, swp), health_points(10)
 {
 
@@ -84,8 +95,8 @@ void IceMan::move()
 		}
 	}
 }
-IceMan::~IceMan(){}
-Thing::Thing(int ID, int x_coord, int y_coord, Direction face, double size, unsigned int depth, StudentWorld * swp):
+
+Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
 	Actor(ID, x_coord, y_coord, face, size, depth, swp), tick(0)
 {
 
@@ -103,32 +114,29 @@ Boulder::Boulder(int x_coord, int y_coord, StudentWorld * swp):
 }
 void Boulder::doSomething()
 {
-	if (getY() != -1)
-		moveTo(getX(), getY() - 1);
-	if (state != 3)
+	int x_coord = getX();
+	int y_coord = getY();
+	if (state != 4)
 	{
-		if (state == 0)
-		{
-			if (SWP->checkBelow(getX(), getY()))
-			{
-				SWP->playSound(IID_BOULDER);
-				state = 1;
-			}
-		}
-		else if (state == 1)
+		if (state == 0 && !SWP->IceBelow(x_coord, y_coord))
+				state = 2;
+		else if (state == 2)
 		{
 			tick++;
 			if (tick == 30)
 			{
-				state = 2;
+				state = 3;
 				SWP->playSound(IID_BOULDER);
 			}
 		}
-		else if (state == 2)
+		else if (state == 3)
 		{
-			moveTo(getX(), getY() - 1);
-			if (getY() == -1)
-				state == 3;
+			moveTo(x_coord, y_coord - 1);
+			if (getY() <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord))
+			{
+				state = 4;
+				setVisible(false);
+			}
 		}
 	}
 
