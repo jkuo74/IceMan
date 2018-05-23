@@ -47,7 +47,7 @@ void IceMan::move()
 		case KEY_PRESS_LEFT:
 			if (left != dir)
 				setDirection(left);
-			else if (x_pos != 0)
+			else if (x_pos != 0 && SWP->by_itself(x_pos - 1, y_pos, 0))
 				moveTo(getX() - 1, getY());
 			else
 				moveTo(getX(), getY());
@@ -55,7 +55,7 @@ void IceMan::move()
 		case KEY_PRESS_RIGHT:
 			if (right != dir)
 				setDirection(right);
-			else if (x_pos != 60)
+			else if (x_pos != 60 && SWP->by_itself(x_pos + 1, y_pos, 0))
 				moveTo(getX() + 1, getY());
 			else
 				moveTo(getX(), getY());
@@ -63,7 +63,7 @@ void IceMan::move()
 		case KEY_PRESS_UP:
 			if (up != dir)
 				setDirection(up);
-			else if (y_pos != 60)
+			else if (y_pos != 60 && SWP->by_itself(x_pos, y_pos + 1, 0))
 				moveTo(getX(), getY() + 1);
 			else
 				moveTo(getX(), getY());
@@ -71,7 +71,7 @@ void IceMan::move()
 		case KEY_PRESS_DOWN:
 			if (down != dir)
 				setDirection(down);
-			else if (y_pos != 0)
+			else if (y_pos != 0 && SWP->by_itself(x_pos, y_pos - 1, 0))
 				moveTo(getX(), getY() - 1);
 			else
 				moveTo(getX(), getY());
