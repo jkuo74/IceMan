@@ -69,12 +69,12 @@ public:
 	virtual ~Boulder() {};
 
 };
-//class Gold_Nugget : public Actor {
-//public:
-//	Gold_Nugget(const int & x_coord, const int & y_coord, StudentWorld * swp);
-//	virtual void doSomething();
-//	virtual ~Gold_Nugget() {};
-//};
+class Gold_Nugget : public Actor {
+public:
+	Gold_Nugget(const int & x_coord, const int & y_coord, StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Gold_Nugget() {};
+};
 /*class Oil_Barrel : public Actor
 {
 public:
