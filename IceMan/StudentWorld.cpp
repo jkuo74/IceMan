@@ -42,7 +42,7 @@ int StudentWorld::init()
 		if (section_rand == 1)
 			x_rand = x_rand + 34;
 		int y_rand = (rand() % 36) + 20;
-		if (by_itself(x_rand, y_rand, 0)) {
+		if (by_itself(x_rand, y_rand, 1)) {
 			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
 			removeIce(x_rand, y_rand);
 			n++;
@@ -56,7 +56,7 @@ int StudentWorld::init()
 		 if (section_rand == 1)
 			x_rand = x_rand + 34;
 		 int y_rand = (rand() % 56);
-		 if (by_itself(x_rand, y_rand, 0)) {
+		 if (by_itself(x_rand, y_rand, 1)) {
 			Objects[GOLD].push_back(std::make_shared<Gold_Nugget>(x_rand, y_rand, this));
 			n++;
 			cerr << "x : " << x_rand << "y : " << y_rand << endl;
@@ -67,7 +67,7 @@ int StudentWorld::init()
 }
 bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int & ID)
 {
-	//ID == 0: set up to check if any other object is within 6 pixels away
+	//ID == 1: set up to check if any other object is within 6 pixels away
 	//ID == 2: checks if any person is within 3 pixels away
 	//ID == 4: checks if only IceMan is within 3 pixels away
 	//ID == 3: checks if only IceMan is within 4 pixels away
@@ -118,7 +118,7 @@ bool StudentWorld::makeVisible() {
 }
 void StudentWorld::pickUpItem() {
 	for (auto it = Objects[GOLD].begin(); it != Objects[GOLD].end(); it++) {
-		if ((*it)->isAlive() && !by_itself(Hero->getX(), Hero->getY(), 0)) {
+		if ((*it)->isAlive() && !by_itself(Hero->getX(), Hero->getY(), 1)) {
 			(*it)->setVisible(true); ///FIX::::::::::::SET TO FALSE
 			(*it) = nullptr;
 		}
