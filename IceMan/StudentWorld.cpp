@@ -2,28 +2,24 @@
 #include <string>
 #include<iostream>
 using namespace std;
-
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
-
-StudentWorld::StudentWorld(string assetDir)
-	: GameWorld(assetDir), current_level_number(0)
+StudentWorld::StudentWorld(string assetDir):
+	GameWorld(assetDir), level(0), total_points(0)
 {
 	SWP = this;
 }
-
-GameWorld* createStudentWorld(string assetDir)
+GameWorld * createStudentWorld(string assetDir)
 {
 	return new StudentWorld(assetDir);
 }
-
-StudentWorld* StudentWorld::getInstance()
+StudentWorld * StudentWorld::getInstance()
 {
 	return SWP;
 }
-
-int StudentWorld::init() {
+int StudentWorld::init()
+{
 	Hero = std::make_shared<IceMan>(this);//add player
 	for (int n = 0; n < 64; n++) {
 		std::vector<Ice*> columns;
@@ -34,69 +30,66 @@ int StudentWorld::init() {
 				columns.push_back(nullptr);
 		IceBlocks.push_back(columns);
 	}
-
-	for (int n = 0; n < 4; n++) { // creating vector of pointers to each Object type
-		std::vector<std::shared_ptr<Actor>> temp_object;
-		Objects.push_back(temp_object);
+	for (int n = 0; n < 8; n++) {
+		std::vector<std::unique_ptr<Actor>> temp_object;
+		Objects.push_back(std::move(temp_object));
 	}
-
-	int B = std::min((current_level_number / 2) + 2, 9);
+	int B = 20;// std::min((level / 2) + 2, 9);
 	int n = 0;
-	while (n <  B) {
+	while (n < B) {
 		int x_rand = (rand() % 27);
 		int section_rand = (rand() % 2);
 		if (section_rand == 1)
 			x_rand = x_rand + 34;
-		int y_rand = (rand() % 56) + 1;
-		if (((x_rand < (initTunnelL - 4)) || (x_rand >(initTunnelR + 4))) && by_itself(x_rand, y_rand, 6)) {
-			Objects[BOULDER].push_back(std::make_shared<Boulder>(x_rand, y_rand, this));
+		int y_rand = (rand() % 36) + 20;
+		if (by_itself(x_rand, y_rand, 0)) {
+			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
 			removeIce(x_rand, y_rand);
 			n++;
 		}
 	}//add boulders
-
-	 int G = std::min((5 - current_level_number / 2), 2); //num of gold  nuggets
+	 int G = std::min((5 - level / 2), 2); //num of gold  nuggets
 	 n = 0;
 	 while (n < G)  {
-		 int x_rand = (rand() % 60);
+		 int x_rand = (rand() % 27);
+		 int section_rand = (rand() % 2);
+		 if (section_rand == 1)
+			x_rand = x_rand + 34;
 		 int y_rand = (rand() % 56);
-		 if (((x_rand < (initTunnelL - 4)) || (x_rand > (initTunnelR + 4))) && by_itself(x_rand, y_rand, 6)) {
-			 Objects[GOLD].push_back(std::make_shared<Gold_Nugget>(x_rand, y_rand, this));
-			 n++;
+		 if (by_itself(x_rand, y_rand, 0)) {
+			Objects[GOLD].push_back(std::make_shared<Gold_Nugget>(x_rand, y_rand, this));
+			n++;
 			cerr << "x : " << x_rand << "y : " << y_rand << endl;
 		 }
 	 } // add gold
 	 
 	return GWSTATUS_CONTINUE_GAME;
 }
-
-bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int & radius) /////////////////////
+bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int & ID)
 {
-	if (Objects.size() != 0)
-		for (auto it = Objects.begin(); it != Objects.end(); it++)
+	//ID == 0: set up to check if any other object is within 6 pixels away
+	//ID == 2: checks if any person is within 3 pixels away
+	//ID == 4: checks if only IceMan is within 3 pixels away
+	//ID == 3: checks if only IceMan is within 4 pixels away
+	if((ID != 4 && ID != 3) && Objects.size() != 0)
+		for (auto it = Objects.begin() + 6*(ID); it != Objects.end(); it++)
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
-			{
-				int x_dist = (*it2)->getX() - x_coord;
-				int y_dist = (*it2)->getY() - y_coord;
-				double distance = sqrt(pow(x_dist, 2.0) + pow(y_dist, 2.0));
-				if (distance <= radius) /////////////////////
+				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= (6.0 - (3.0 * ID))) // distance is less than 6.0 or 3.0
 					return false;
-			}
+	if ((ID == 2 || ID == 3 || ID == 4) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) +  3))
+		return false;
 	return true;
 }
-
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord)
 {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
-			if (IceBlocks[n][m] != nullptr)
-			{
+			if (IceBlocks[n][m] != nullptr) {
 				playSound(IID_ICE);
 				delete IceBlocks[n][m];
 				IceBlocks[n][m] = nullptr;
 			}
 }
-
 bool StudentWorld::IceBelow(const int & x_coord, const int & y_coord)
 {
 	return IceBlocks[x_coord][y_coord - 1] != nullptr ||
@@ -104,13 +97,10 @@ bool StudentWorld::IceBelow(const int & x_coord, const int & y_coord)
 		IceBlocks[x_coord + 2][y_coord - 1] != nullptr ||
 		IceBlocks[x_coord + 3][y_coord - 1] != nullptr;
 }
-
 bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord)
 {
-	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++)
-	{
-		if ((*it)->isAlive() && abs((*it)->getX() - x_coord) < 4)
-		{
+	for (auto it = Objects[0].begin(); it != Objects[0].end(); it++) {
+		if (abs((*it)->getX() - x_coord) < 4) {
 			if (y_coord == ((*it)->getY() + 4))
 				return true;
 		}
@@ -134,19 +124,18 @@ void StudentWorld::pickUpItem() {
 		}
 	}
 }
-
+void StudentWorld::changePoints(const int & points)
+{
+	total_points += points;
+}
 int StudentWorld::move()
 {
-	if (Hero->getHealth() != 0)
-	{
-		for (auto it = Objects.begin(); it != Objects.end(); it++)
-		{
+	if (Hero->getHealth() != 0) {
+		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
-			{
-				if ((*it2)->isAlive())
 					(*it2)->doSomething();
-			}
 		}
+		deleteDeadObjects();
 		Hero->doSomething();
 		return GWSTATUS_CONTINUE_GAME;
 	}
@@ -156,24 +145,50 @@ int StudentWorld::move()
 	decLives();
 	return GWSTATUS_PLAYER_DIED;
 }
-
-void StudentWorld::cleanUp() {
+void StudentWorld::deleteDeadObjects()
+{
+	for (auto it = Objects.begin(); it != Objects.end(); it++) {
+		vector<int> toDelete;
+		int index = 0;
+		for (auto it2 = it->begin(); it2 != it->end(); it2++) {
+			if (!(*it2)->isAlive()) {
+				(*it2).reset();
+				toDelete.push_back(index);
+			}
+			index++;
+		}
+		if (toDelete.size() != 0) {
+			for (auto it2 = toDelete.begin(); it2 != toDelete.end(); it2++)
+				it->erase((it->begin() + *it2));
+			it->shrink_to_fit();
+		}
+	}
+}
+int StudentWorld::getLevel()
+{
+	return level;
+}
+void StudentWorld::cleanUp() 
+{
 	Hero = nullptr;
-	++current_level_number;
+	++level;
 	for (std::vector<Ice*> & line : IceBlocks) {
 		for (Ice* & block : line) {
 			delete block;
 			block = nullptr;
 		}
-
+		line.clear();
 	}
+	IceBlocks.clear();
 	for (auto & line : Objects) {
 		for (auto & block : line) {
-			block = nullptr;
+			block.reset(nullptr);
 		}
-	}
+		line.clear();
+		}
+	Objects.clear();
 }
-
-StudentWorld::~StudentWorld() {
+StudentWorld::~StudentWorld()
+{
 	cleanUp();
 }
