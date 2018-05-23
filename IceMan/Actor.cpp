@@ -116,9 +116,19 @@ void Boulder::doSomething() {
 		}
 	}
 }
-/*Gold_Nugget::Gold_Nugget(int x_coord, int y_coord, StudentWorld * swp):
-	Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2, swp)
-{
-}*/
-
-// Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
+Gold_Nugget::Gold_Nugget(const int & x_coord, const int & y_coord, StudentWorld * swp):
+	Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2, swp)  {
+	//if (state != TEMPORARY) {
+	//	setVisible(false);
+	//}
+}
+void Gold_Nugget::doSomething() {
+	if (state == DEAD) {
+		return;
+	}
+	//if (visible && SWP->makeVisible()) { //nugget is invisible ** FIX ::: !VISIBLE
+	//	visible = false;
+	//}
+	SWP->makeVisible();
+	SWP->pickUpItem();
+}
