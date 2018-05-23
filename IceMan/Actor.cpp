@@ -1,17 +1,10 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-
-const static int ALIVE = 0;
-const static int PERMANENT = 1;
-const static int TEMPORARY = 2;
-const static int FALLING = 3;
-const static int DEAD = 4;
-
-Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
-	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(0)
-{
+Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp),state(ALIVE) {
 	setVisible(true);
+	visible = true;
 }
 int Actor::getState()
 {
@@ -96,10 +89,9 @@ void IceMan::move()
 	}
 }
 
-Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
-	Actor(ID, x_coord, y_coord, face, size, depth, swp), tick(0)
-{
-
+Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
+	Actor(ID, x_coord, y_coord, face, size, depth, swp), tick(0) {
+	state = PERMANENT;
 }
 
 Ice::Ice(int x_coord, int y_coord, StudentWorld * swp):
@@ -108,38 +100,31 @@ Ice::Ice(int x_coord, int y_coord, StudentWorld * swp):
 
 }
 
-Boulder::Boulder(int x_coord, int y_coord, StudentWorld * swp):
-	Thing(IID_BOULDER, x_coord, y_coord, right, 1.0, 1, swp)
-{
-}
-void Boulder::doSomething()
-{
+Boulder::Boulder(int x_coord, int y_coord, StudentWorld * swp) :
+	Thing(IID_BOULDER, x_coord, y_coord, right, 1.0, 1, swp){}
+void Boulder::doSomething() {
 	int x_coord = getX();
 	int y_coord = getY();
-	if (state != 4)
-	{
-		if (state == 0 && !SWP->IceBelow(x_coord, y_coord))
-				state = 2;
-		else if (state == 2)
-		{
+	if (state != DEAD) {
+		if (state == PERMANENT && !SWP->IceBelow(x_coord, y_coord)) {
+			state = TEMPORARY;
+		}
+		else if (state == TEMPORARY) {
 			tick++;
-			if (tick == 30)
-			{
-				state = 3;
+			if (tick == 30) {
+				state = FALLING;
 				SWP->playSound(IID_BOULDER);
 			}
 		}
-		else if (state == 3)
-		{
+		else if (state == FALLING) {
 			moveTo(x_coord, y_coord - 1);
-			if (getY() <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord))
-			{
-				state = 4;
+			if (getY() <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord)) {
+				state = DEAD;
 				setVisible(false);
+				visible = false;
 			}
 		}
 	}
-
 }
 /*Gold_Nugget::Gold_Nugget(int x_coord, int y_coord, StudentWorld * swp):
 	Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2, swp)
