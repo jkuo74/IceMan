@@ -11,7 +11,7 @@
 #include <memory>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
-enum ObjType { BOULDER, GOLD, OIL, SONAR, WATER };
+enum ObjType { BOULDER, GOLD, OIL, SONAR, SQUIRT, WATER, PROTESTOR, HARDCORE_PROTESTOR };
 class StudentWorld : public GameWorld
 {
 public:
