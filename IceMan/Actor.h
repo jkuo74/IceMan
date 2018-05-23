@@ -3,9 +3,8 @@
 
 #include "GraphObject.h"
 class StudentWorld;
-
-class Actor : public GraphObject
-{
+enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD};
+class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
 	int getState();
@@ -13,10 +12,9 @@ public:
 	bool isVisible();
 	bool isAlive();
 	virtual ~Actor() { SWP = nullptr; };
-
 protected:
 	StudentWorld * SWP;
-	int state;
+	STATE  state;
 	bool visible;
 };
 
@@ -48,8 +46,7 @@ class Hardcore_Protester : public Regular_Protester
 {
 public:
 };*/
-class Thing :public Actor
-{
+class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
@@ -57,13 +54,11 @@ public:
 protected:
 	int tick;
 };
-class Ice : public Thing
-{
+class Ice : public Thing {
 public:
 	Ice(int x, int y, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
 	virtual ~Ice() {};
-
 };
 
 class Boulder : public Thing
@@ -74,16 +69,15 @@ public:
 	virtual ~Boulder() {};
 
 };
-/*class Gold_Nugget : public Actor
-{
-public:	
-	Gold_Nugget(int x_coord, int y_coord, StudentWorld * swp);
-	virtual void doSomething();
-
-};*/
+//class Gold_Nugget : public Actor {
+//public:
+//	Gold_Nugget(const int & x_coord, const int & y_coord, StudentWorld * swp);
+//	virtual void doSomething();
+//	virtual ~Gold_Nugget() {};
+//};
 /*class Oil_Barrel : public Actor
 {
 public:
-	Oil_Barrel(int)
+Oil_Barrel(int)
 };*/
 #endif // ACTOR_H_
