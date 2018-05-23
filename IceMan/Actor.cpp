@@ -2,7 +2,7 @@
 #include "StudentWorld.h"
 
 Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
-	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(ALIVE), visible(true) {
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(st), visible(true) {
 	setVisible(true);
 }
 int Actor::getState() {
@@ -76,7 +76,7 @@ Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STA
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp):
 	Thing(IID_ICE, x_coord, y_coord, PERMANENT, right, 0.25, 3, swp) {}
 Boulder::Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp):
-	Thing(IID_BOULDER, x_coord, y_coord, PERMANENT, right, 1.0, 1, swp) {}
+	Thing(IID_BOULDER, x_coord, y_coord, ALIVE, right, 1.0, 1, swp) {}
 void Boulder::doSomething() {
 	int x_coord = getX();
 	int y_coord = getY();
@@ -100,13 +100,14 @@ void Boulder::doSomething() {
 		}
 	}
 }
-Gold_Nugget::Gold_Nugget(const int & x_coord, const int & y_coord, StudentWorld * swp):
-	Actor(IID_GOLD, x_coord, y_coord, right, 1.0, 2, swp)  {
+Gold_Nugget::Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp) :
+	Thing(IID_GOLD, x_coord, y_coord, st, right, 1.0, 2, swp) {
 	//if (state != TEMPORARY) {
 	//	setVisible(false);
 	//}
 }
-void Gold_Nugget::doSomething() {
+void Gold_Nugget::doSomething()
+{
 	if (state == DEAD) {
 		return;
 	}
@@ -120,8 +121,7 @@ Temp_Thing::Temp_Thing(const int & ID, const int & x_coord, const int & y_coord,
 	Thing(ID, x_coord, y_coord, st, face, size, depth, swp), tick_limit(max_ticks) {}
 Sonar_Kit::Sonar_Kit(StudentWorld * swp):
 	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, std::max(100, 300-10*swp->getLevel()), swp) {}
-void Sonar_Kit::doSomething()
-{
+void Sonar_Kit::doSomething(){
 	if (state == TEMPORARY) {
 		tick++;
 		if (!SWP->by_itself(getX(), getY(), 2)) {
