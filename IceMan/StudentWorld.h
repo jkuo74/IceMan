@@ -25,7 +25,7 @@ public:
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	bool makeVisible();
-	void pickUpItem(const int & x_coord, const int & y_coord);
+	void pickUpItem();
 
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
