@@ -118,10 +118,21 @@ bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord)
 	return false;
 }
 bool StudentWorld::makeVisible() {
-	
+	for (auto it = Objects[GOLD].begin(); it != Objects[GOLD].end(); it++) {
+		if ((*it)->isAlive() && !by_itself(Hero->getX(),Hero->getY(), 4)) {
+			(*it)->setVisible(false); ///FIX::::::::::::SET TO TRUE
+			return true;
+		}
+	}
+	return false;
 }
-void StudentWorld::pickUpItem(const int & x_coord, const int & y_coord) {
-
+void StudentWorld::pickUpItem() {
+	for (auto it = Objects[GOLD].begin(); it != Objects[GOLD].end(); it++) {
+		if ((*it)->isAlive() && !by_itself(Hero->getX(), Hero->getY(), 0)) {
+			(*it)->setVisible(true); ///FIX::::::::::::SET TO FALSE
+			(*it) = nullptr;
+		}
+	}
 }
 
 int StudentWorld::move()
