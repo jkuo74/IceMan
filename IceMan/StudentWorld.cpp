@@ -72,9 +72,9 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 	//ID == 4: checks if only IceMan is within 3 pixels away
 	//ID == 3: checks if only IceMan is within 4 pixels away
 	if((ID != 4 && ID != 3) && Objects.size() != 0)
-		for (auto it = Objects.begin() + 6*(ID); it != Objects.end(); it++)
+		for (auto it = Objects.begin() + 6*(ID - 1); it != Objects.end(); it++)
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
-				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= (6.0 - (3.0 * ID))) // distance is less than 6.0 or 3.0
+				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= (6.0 - (3.0 * (ID - 1)))) // distance is less than 6.0 or 3.0
 					return false;
 	if ((ID == 2 || ID == 3 || ID == 4) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) +  3))
 		return false;
