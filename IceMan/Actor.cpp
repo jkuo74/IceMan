@@ -2,41 +2,33 @@
 #include "StudentWorld.h"
 
 Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
-	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(ALIVE), visible(true)
-{
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(ALIVE), visible(true) {
 	setVisible(true);
 }
-int Actor::getState()
-{
+int Actor::getState() {
 	return state;
 }
-bool Actor::isVisible()
-{
+bool Actor::isVisible() {
 	return visible;
 }
-bool Actor::isAlive()
-{
+bool Actor::isAlive() {
 	return state != DEAD;
 }
 Person::Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, right, size, depth, swp), health_points(10) {}
-void Person::annoy()
-{
-	health_points = health_points - 2;
+void Person::annoy(const int & damage) {
+	health_points = health_points - damage;
 }
-int Person::getHealth()
-{
+int Person::getHealth() {
 	return health_points;
 }
 
 IceMan::IceMan(StudentWorld * swp):
 	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp) {}
-void IceMan::doSomething()
-{
+void IceMan::doSomething() {
 	move();
 }
-void IceMan::move()
-{
+void IceMan::move() {
 	SWP->removeIce(getX(), getY());
 	int ch;
 	if (SWP->getKey(ch)) {
@@ -79,17 +71,13 @@ void IceMan::move()
 		}
 	}
 }
-
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp), tick(0) {}
-
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp):
 	Thing(IID_ICE, x_coord, y_coord, PERMANENT, right, 0.25, 3, swp) {}
-
 Boulder::Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp):
 	Thing(IID_BOULDER, x_coord, y_coord, PERMANENT, right, 1.0, 1, swp) {}
-void Boulder::doSomething()
-{
+void Boulder::doSomething() {
 	int x_coord = getX();
 	int y_coord = getY();
 	if (state != DEAD) {
@@ -104,7 +92,8 @@ void Boulder::doSomething()
 		}
 		else if (state == FALLING) {
 			moveTo(x_coord, y_coord - 1);
-			if (getY() <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord)) {
+			SWP->by_itself(x_coord, y_coord, 5);
+			if (y_coord <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord)) {
 				state = DEAD;
 				setVisible(false);
 			}
