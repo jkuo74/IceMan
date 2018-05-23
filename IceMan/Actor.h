@@ -6,22 +6,21 @@ class StudentWorld;
 enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD};
 class Actor : public GraphObject {
 public:
-	Actor(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
+	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
 	int getState();
 	virtual void doSomething() = 0;
 	bool isVisible();
 	bool isAlive();
 	virtual ~Actor() { SWP = nullptr; };
+
 protected:
 	StudentWorld * SWP;
-	STATE  state;
+	STATE state;
 	bool visible;
 };
-
-class Person : public Actor
-{
+class Person : public Actor {
 public:
-	Person(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face = right, const double & size = 1.0, const unsigned int & depth = 0, StudentWorld * swp = nullptr);
+	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face = right, const double & size = 1.0, const unsigned int & depth = 0, StudentWorld * swp = nullptr);
 	virtual void move() = 0;
 	void annoy();
 	int getHealth();
@@ -30,8 +29,7 @@ public:
 protected:
 	int health_points;
 };
-class IceMan : public Person
-{
+class IceMan : public Person {
 public:
 	IceMan(StudentWorld * swp = nullptr);
 	void move();
@@ -48,7 +46,7 @@ public:
 };*/
 class Thing : public Actor {
 public:
-	Thing(const int & ID, const int & x_coord, const int & y_coord, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
+	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
 	virtual ~Thing() {};
 protected:
@@ -56,18 +54,16 @@ protected:
 };
 class Ice : public Thing {
 public:
-	Ice(int x, int y, StudentWorld * swp = nullptr);
+	Ice(const int & x_coord, const int & y_coord, StudentWorld * swp = nullptr);
 	virtual void doSomething() {}
 	virtual ~Ice() {};
 };
 
-class Boulder : public Thing
-{
+class Boulder : public Thing {
 public:
-	Boulder(int x_coord, int y_coord, StudentWorld * swp);
+	Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Boulder() {};
-
 };
 class Gold_Nugget : public Actor {
 public:
@@ -80,4 +76,15 @@ public:
 public:
 Oil_Barrel(int)
 };*/
+class Temp_Thing : public Thing {
+public:
+	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp = nullptr);
+protected:
+	int tick_limit;
+};
+class Sonar_Kit :public Temp_Thing {
+public:
+	Sonar_Kit(StudentWorld * swp);
+	virtual void doSomething();
+};
 #endif // ACTOR_H_
