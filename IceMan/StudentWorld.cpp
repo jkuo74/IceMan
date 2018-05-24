@@ -2,11 +2,11 @@
 #include <string>
 #include<iostream>
 using namespace std;
+
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
-StudentWorld::StudentWorld(string assetDir):
-	GameWorld(assetDir), level(0), total_points(0) {
+StudentWorld::StudentWorld(string assetDir):GameWorld(assetDir), level(0), total_points(0) {
 	SWP = this;
 }
 GameWorld * createStudentWorld(string assetDir) {
@@ -20,8 +20,9 @@ int StudentWorld::init() {
 	for (int n = 0; n < 64; n++) {
 		std::vector<Ice*> columns;
 		for (int m = 0; m < 64; m++)
-			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60)
+			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60){
 				columns.push_back(new Ice{ n,m });
+			}
 			else
 				columns.push_back(nullptr);
 		IceBlocks.push_back(columns);
@@ -30,7 +31,7 @@ int StudentWorld::init() {
 		std::vector<std::unique_ptr<Actor>> temp_object;
 		Objects.push_back(std::move(temp_object));
 	}
-	int B = 20;// std::min((level / 2) + 2, 9);
+	int B =  std::min((level / 2) + 2, 9); // 20;
 	int n = 0;
 	while (n < B) {
 		int x_rand = (rand() % 27);
@@ -55,6 +56,7 @@ int StudentWorld::init() {
 		if (by_itself(x_rand, y_rand, 1)) {
 			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
 			n++;
+			//cerr << "GOLD x : " << x_rand << " y : " << y_rand << endl;
 		}
 	} // add gold
 	return GWSTATUS_CONTINUE_GAME;
@@ -124,21 +126,31 @@ bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
 	return false;
 }
 bool StudentWorld::makeVisible() {
-	for (auto it = Objects[GOLD].begin(); it != Objects[GOLD].end(); it++) {
-		if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 3)) {
-			(*it)->setVisible(false); ///FIX::::::::::::SET TO TRUE
-			return true;
+	if (obj == GOLD || obj == OIL) {
+		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
+			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 3)) {
+				(*it)->setVisibility(true);
+				cerr << obj << " VISIBLE " << endl;
+				return true;
+			}
 		}
 	}
 	return false;
 }
 void StudentWorld::pickUpItem() {
-	//for (auto it = Objects[GOLD].begin(); it != Objects[GOLD].end(); it++) {
-	//	if ((*it)->isAlive() && !by_itself(Hero->getX(), Hero->getY(), 1)) {
-	//		(*it)->setVisible(false); ///FIX::::::::::::SET TO FALSE
-	//		(*it) = nullptr;
-	//	}
-	//}
+	if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER) {
+		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
+			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 4)) {
+				(*it)->setVisibility(false); 
+				(*it)->setState(DEAD);
+				///////////// FIX : NUM_OBJ++;
+				playSound(SOUND_GOT_GOODIE); // CHECK
+				cerr << obj << " PICKED UP" << endl;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 void StudentWorld::changePoints(const int & points) {
 	total_points += points;
@@ -146,8 +158,9 @@ void StudentWorld::changePoints(const int & points) {
 int StudentWorld::move() {
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
-			for (auto it2 = it->begin(); it2 != it->end(); it2++)
-					(*it2)->doSomething();
+			for (auto it2 = it->begin(); it2 != it->end(); it2++){
+				(*it2)->doSomething();
+			}
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
