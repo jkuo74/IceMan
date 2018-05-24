@@ -3,7 +3,7 @@
 
 #include "GraphObject.h"
 class StudentWorld;
-enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD};
+enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
@@ -15,6 +15,7 @@ public:
 	void setState(const STATE & st) { state = st; };
 	void setVisibility(const bool & v) { setVisible(v); visible = v; };
 	virtual ~Actor() { SWP = nullptr; };
+
 protected:
 	StudentWorld * SWP;
 	STATE state;
