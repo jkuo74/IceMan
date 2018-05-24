@@ -28,6 +28,7 @@ public:
 	void changePoints(const int & points);
 	bool makeVisible(ObjType obj);
 	bool pickUpItem(ObjType obj);
+	void addItem(const ObjType & ID);
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
 	std::shared_ptr<IceMan> getHero() { return Hero; };
