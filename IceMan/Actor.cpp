@@ -1,7 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
-using namespace std; 
-
+using namespace std;
 Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(st) {
 	setVisibility(true);
@@ -24,8 +23,8 @@ int Person::getHealth() {
 	return health_points;
 }
 
-IceMan::IceMan(StudentWorld * swp):
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp) {}
+IceMan::IceMan(StudentWorld * swp) :
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), num_Nuggets(1), num_Sonars(1), num_Waters(5) {}
 void IceMan::doSomething() {
 	move();
 }
@@ -111,7 +110,7 @@ void Gold_Nugget::doSomething() {
 	if (state == DEAD) {
 		return;
 	}
-	if (!visible && state == PERMANENT){
+	if (!visible && state == PERMANENT) {
 		SWP->makeVisible(GOLD); //nugget is invisible ** FIX ::: !VISIBLE
 		return;
 	}
