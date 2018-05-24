@@ -26,8 +26,8 @@ public:
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	void changePoints(const int & points);
-	bool makeVisible();
-	void pickUpItem();
+	bool makeVisible(ObjType obj);
+	bool pickUpItem(ObjType obj);
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
 	std::shared_ptr<IceMan> getHero() { return Hero; };
