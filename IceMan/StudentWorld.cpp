@@ -2,11 +2,11 @@
 #include <string>
 #include<iostream>
 using namespace std;
-
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
-StudentWorld::StudentWorld(string assetDir):GameWorld(assetDir), level(0), total_points(0) {
+StudentWorld::StudentWorld(string assetDir) :
+	GameWorld(assetDir), level(0), total_points(0) {
 	SWP = this;
 }
 GameWorld * createStudentWorld(string assetDir) {
@@ -20,9 +20,8 @@ int StudentWorld::init() {
 	for (int n = 0; n < 64; n++) {
 		std::vector<Ice*> columns;
 		for (int m = 0; m < 64; m++)
-			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60){
+			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60)
 				columns.push_back(new Ice{ n,m });
-			}
 			else
 				columns.push_back(nullptr);
 		IceBlocks.push_back(columns);
@@ -31,7 +30,7 @@ int StudentWorld::init() {
 		std::vector<std::unique_ptr<Actor>> temp_object;
 		Objects.push_back(std::move(temp_object));
 	}
-	int B =  std::min((level / 2) + 2, 9); // 20;
+	int B = 20;// std::min((level / 2) + 2, 9);
 	int n = 0;
 	while (n < B) {
 		int x_rand = (rand() % 27);
@@ -56,7 +55,6 @@ int StudentWorld::init() {
 		if (by_itself(x_rand, y_rand, 1)) {
 			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
 			n++;
-			//cerr << "GOLD x : " << x_rand << " y : " << y_rand << endl;
 		}
 	} // add gold
 	return GWSTATUS_CONTINUE_GAME;
@@ -92,11 +90,11 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 		}
 	}
 	if ((ID == 2 || ID == 3 || ID == 4 || ID == 5) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) + 3)) {
- 		if (ID == 5 && Hero->getY() < y_coord) {
+		if (ID == 5 && Hero->getY() < y_coord) {
 			Hero->annoy(100);
 			return false;
 		}
-		if(ID != 5)
+		if (ID != 5)
 			return false;
 	}
 	return true;
@@ -158,9 +156,8 @@ void StudentWorld::changePoints(const int & points) {
 int StudentWorld::move() {
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
-			for (auto it2 = it->begin(); it2 != it->end(); it2++){
+			for (auto it2 = it->begin(); it2 != it->end(); it2++)
 				(*it2)->doSomething();
-			}
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
@@ -209,7 +206,7 @@ void StudentWorld::cleanUp() {
 			block.reset(nullptr);
 		}
 		line.clear();
-		}
+	}
 	Objects.clear();
 }
 StudentWorld::~StudentWorld() {
