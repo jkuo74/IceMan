@@ -125,7 +125,7 @@ bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
 	}
 	return false;
 }
-bool StudentWorld::makeVisible() {
+bool StudentWorld::makeVisible(ObjType obj) {
 	if (obj == GOLD || obj == OIL) {
 		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
 			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 3)) {
@@ -137,7 +137,7 @@ bool StudentWorld::makeVisible() {
 	}
 	return false;
 }
-void StudentWorld::pickUpItem() {
+bool StudentWorld::pickUpItem(ObjType obj) {
 	if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER) {
 		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
 			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 4)) {
