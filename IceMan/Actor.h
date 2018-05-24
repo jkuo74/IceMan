@@ -12,8 +12,8 @@ public:
 	bool isVisible();
 	bool isAlive();
 	virtual void annoy(const int & damage) = 0;
-	void setState(STATE st) { state = st; };
-	void setVisibility(bool v) { setVisible(v); visible = v; };
+	void setState(const STATE & st) { state = st; };
+	void setVisibility(const bool & v) { setVisible(v); visible = v; };
 	virtual ~Actor() { SWP = nullptr; };
 protected:
 	StudentWorld * SWP;
