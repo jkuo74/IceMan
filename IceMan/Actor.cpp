@@ -1,9 +1,10 @@
 #include "Actor.h"
 #include "StudentWorld.h"
+using namespace std; 
 
 Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
-	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(st), visible(true) {
-	setVisible(true);
+	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(st) {
+	setVisibility(true);
 }
 int Actor::getState() {
 	return state;
@@ -95,27 +96,30 @@ void Boulder::doSomething() {
 			SWP->by_itself(x_coord, y_coord, 5);
 			if (y_coord <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord)) {
 				state = DEAD;
-				setVisible(false);
+				setVisibility(false);
 			}
 		}
 	}
 }
 Gold_Nugget::Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp) :
 	Thing(IID_GOLD, x_coord, y_coord, st, right, 1.0, 2, swp) {
-	//if (state != TEMPORARY) {
-	//	setVisible(false);
-	//}
+	if (state != TEMPORARY) {
+		setVisibility(false);
+	}
 }
-void Gold_Nugget::doSomething()
-{
+void Gold_Nugget::doSomething() {
 	if (state == DEAD) {
 		return;
 	}
-	//if (visible && SWP->makeVisible()) { //nugget is invisible ** FIX ::: !VISIBLE
-	//	visible = false;
-	//}
-	SWP->makeVisible();
-	SWP->pickUpItem();
+	if (!visible && state == PERMANENT){
+		SWP->makeVisible(GOLD); //nugget is invisible ** FIX ::: !VISIBLE
+		return;
+	}
+	if (visible) {
+		SWP->pickUpItem(GOLD);
+		SWP->changePoints(10);
+		return;
+	}
 }
 Temp_Thing::Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp):
 	Thing(ID, x_coord, y_coord, st, face, size, depth, swp), tick_limit(max_ticks) {}
