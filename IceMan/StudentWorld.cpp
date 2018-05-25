@@ -2,11 +2,13 @@
 #include <string>
 #include<iostream>
 using namespace std;
+
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
-StudentWorld::StudentWorld(string assetDir) :
-	GameWorld(assetDir), level(0), total_points(0) {
+const static int sizeOfGold = 4;
+
+StudentWorld::StudentWorld(string assetDir) :GameWorld(assetDir), oilInField(0) {
 	SWP = this;
 }
 GameWorld * createStudentWorld(string assetDir) {
@@ -20,23 +22,25 @@ int StudentWorld::init() {
 	for (int n = 0; n < 64; n++) {
 		std::vector<Ice*> columns;
 		for (int m = 0; m < 64; m++)
-			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60)
+			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60) {
 				columns.push_back(new Ice{ n,m });
+			}
 			else
 				columns.push_back(nullptr);
 		IceBlocks.push_back(columns);
 	}
 	for (int n = 0; n < 8; n++) {
-		std::vector<std::unique_ptr<Actor>> temp_object;
+		vector<unique_ptr<Actor>> temp_object; 
 		Objects.push_back(std::move(temp_object));
 	}
-	int B = 20;// std::min((level / 2) + 2, 9);
+	int B = int B = min((static_cast<int>(getLevel()) / 2) + 2, 9); // 20;
 	int n = 0;
 	while (n < B) {
-		int x_rand = (rand() % 27);
+		int x_rand = (rand() % (initTunnelL - 3));
 		int section_rand = (rand() % 2);
-		if (section_rand == 1)
-			x_rand = x_rand + 34;
+		if (section_rand == 1) {
+			x_rand += 34;
+		}
 		int y_rand = (rand() % 36) + 20;
 		if (by_itself(x_rand, y_rand, 1)) {
 			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
@@ -44,19 +48,35 @@ int StudentWorld::init() {
 			n++;
 		}
 	}//add boulders
-	int G = std::min((5 - level / 2), 2); //num of gold  nuggets
+	int G = min((5 - static_cast<int>(getLevel()) / 2), 2); //num of gold  nuggets 
 	n = 0;
 	while (n < G) {
-		int x_rand = (rand() % 27);
-		int section_rand = (rand() % 2);
-		if (section_rand == 1)
-			x_rand = x_rand + 34;
+		int x_rand = (rand() % (initTunnelL - sizeOfGold + 1));  
+		int section_rand = (rand() % 2); // ensures item ends up to the left or right of inital tunne
+		if (section_rand == 1) {
+			x_rand += (initTunnelR + 1);
+		}	
 		int y_rand = (rand() % 56);
 		if (by_itself(x_rand, y_rand, 1)) {
 			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
 			n++;
+			//cerr << "GOLD x : " << x_rand << " y : " << y_rand << endl; 
 		}
 	} // add gold
+	oilInField = min(2 + static_cast<int>(getLevel()), 21);
+	n = 0;
+	while (n < oilInField) {
+		int x_rand = (rand() % (initTunnelL - sizeOfGold + 1)); 
+		int section_rand = (rand() % 2); // ensures item ends up to the left or right of inital tunnel
+		if (section_rand == 1)
+			x_rand += (initTunnelR + 1);
+		int y_rand = (rand() % 56);
+		if (by_itself(x_rand, y_rand, 1)) {
+			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
+			n++;
+			cerr << "OIL x : " << x_rand << " y : " << y_rand << endl;
+		}
+	}
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int & ID) {
@@ -139,29 +159,49 @@ bool StudentWorld::makeVisible(ObjType obj) {
 	}
 	return false;
 }
-bool StudentWorld::pickUpItem(ObjType obj) {
-	if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER) {
-		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
-			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 4)) {
-				(*it)->setVisibility(false); 
-				(*it)->setState(DEAD);
-				///////////// FIX : NUM_OBJ++;
-				playSound(SOUND_GOT_GOODIE); // CHECK
-				cerr << obj << " PICKED UP" << endl;
-				return true;
+bool StudentWorld::allOilFound() {
+	return Hero->getNumItems(OIL) == oilInField;
+}
+bool StudentWorld::pickUpItem(ObjType person, ObjType obj) {
+		if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER) {
+			for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
+				if ((*it)->isAlive()){
+					if (person == ICEMAN && !by_itself((*it)->getX(), (*it)->getY(), 4)) {
+						(*it)->setState(DEAD);
+						Hero->addItem(obj);
+						cerr << obj << " PICKED UP" << endl;
+						switch (obj) {
+						case GOLD: case SONAR: case WATER:
+							playSound(SOUND_GOT_GOODIE);
+							break;
+						case OIL:
+							playSound(SOUND_FOUND_OIL);
+							cout << "NUM OIL: " << Hero->getNumItems(OIL) << endl;
+							break;
+						}
+					return true;
+					}
+					///// FIX
+					if (obj == GOLD && (*it)->getState() == TEMPORARY && !by_itself((*it)->getX(), (*it)->getY(), 6)) {					
+						if (person == PROTESTER) {
+							(*it)->setState(DEAD);
+							//cerr << person << " PICKED UP " << obj << endl;
+							playSound(SOUND_PROTESTER_FOUND_GOLD);					
+						}
+						if (person == HARDCORE_PROTESTER){}
+						return true;
+					}
+				}
 			}
 		}
-	}
 	return false;
-}
-void StudentWorld::changePoints(const int & points) {
-	total_points += points;
 }
 int StudentWorld::move() {
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
-			for (auto it2 = it->begin(); it2 != it->end(); it2++)
+			for (auto it2 = it->begin(); it2 != it->end(); it2++){
 				(*it2)->doSomething();
+			}
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
@@ -191,12 +231,9 @@ void StudentWorld::deleteDeadObjects() {
 		}
 	}
 }
-int StudentWorld::getLevel() {
-	return level;
-}
 void StudentWorld::cleanUp() {
 	Hero = nullptr;
-	++level;
+	//++level; // ????
 	for (std::vector<Ice*> & line : IceBlocks) {
 		for (Ice* & block : line) {
 			delete block;
