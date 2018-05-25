@@ -3,6 +3,7 @@
 
 #include "GraphObject.h"
 class StudentWorld;
+enum ObjType;
 enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
@@ -37,20 +38,27 @@ public:
 	IceMan(StudentWorld * swp = nullptr);
 	void move();
 	virtual void doSomething();
+		void addItem(ObjType item); 
+	int getNumItems(ObjType item);
+	//virtual bool pickUpItem(ObjType obj);
 	virtual ~IceMan() {};
 private:
-	int num_Nuggets;
-	int num_Sonars;
-	int num_Waters;
+	//int num_Gold;
+	//int num_Oil;
+	//int num_Sonar;
+	//int num_Water;
+	int itemArr[5]; // 0=BOULDER, 1=GOLD, 2=OIL, 3=SONAR, 4 = WATER
 };
-/*class Regular_Protester : public Person
-{
-public:
-};
-class Hardcore_Protester : public Regular_Protester
-{
-public:
-};*/
+//class Regular_Protester : public Person
+//{
+//public:
+//	
+//
+//};
+//class Hardcore_Protester : public Regular_Protester
+//{
+//public:
+//};
 class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
@@ -78,17 +86,19 @@ public:
 	virtual void doSomething();
 	virtual ~Gold_Nugget() {};
 };
-/*class Oil_Barrel : public Thing
-{
+class Oil_Barrel : public Thing {
 public:
-	Oil_Barrel(int)
-};*/
+	Oil_Barrel(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Oil_Barrel() {};
+};
 
 class Temp_Thing : public Thing {
 public:
 	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp = nullptr);
 protected:
 	int tick_limit;
+	//int pickedUpBy; // 0 = ICEMAN ONLY,  1 = PROTESTER ONLY, 3 = BOTH
 };
 class Sonar_Kit :public Temp_Thing {
 public:
