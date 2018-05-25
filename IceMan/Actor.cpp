@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 using namespace std;
+
 Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	GraphObject(ID, x_coord, y_coord, face, size, depth), SWP(swp), state(st) {
 	setVisibility(true);
@@ -17,16 +18,19 @@ bool Actor::isAlive() {
 Person::Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, right, size, depth, swp), health_points(10) {}
 void Person::annoy(const int & damage) {
-	health_points = health_points - damage;
+	health_points -= damage; 
 }
 int Person::getHealth() {
 	return health_points;
 }
 
 IceMan::IceMan(StudentWorld * swp) :
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), num_Nuggets(1), num_Sonars(1), num_Waters(5) {}
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), itemArr{ 0 } {}
 void IceMan::doSomething() {
 	move();
+	if (health_points == 0) {
+		SWP->decLives();
+	}
 }
 void IceMan::move() {
 	SWP->removeIce(getX(), getY());
@@ -71,6 +75,27 @@ void IceMan::move() {
 		}
 	}
 }
+void IceMan::addItem(ObjType obj) {
+	if (obj <= WATER) {  // checks if obj can be picked up
+		itemArr[obj]++;
+	}
+}
+int IceMan::getNumItems(ObjType obj) {
+	if (obj > WATER) {  // checks if obj can be picked up FIX: BOULDER = 0
+		return -1;
+	}
+	return itemArr[obj];
+}
+//bool IceMan::pickUpItem(ObjType obj) {
+//
+//}
+
+//void Regular_Protester::doSomething() {
+//	if (SWP->pickupItem(GOLD)){
+//		// FIX : ONLY ONE PROTESTER GETS BRIBED
+//		SWP->increaseScore(25);
+//	}
+//}
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp):
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp), tick(0) {}
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp):
@@ -95,42 +120,75 @@ void Boulder::doSomething() {
 			SWP->by_itself(x_coord, y_coord, 5);
 			if (y_coord <= 0 || SWP->IceBelow(x_coord, y_coord) || SWP->BoulderBelow(x_coord, y_coord)) {
 				state = DEAD;
-				setVisibility(false);
+				//setVisibility(false);
 			}
 		}
 	}
 }
 Gold_Nugget::Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp) :
 	Thing(IID_GOLD, x_coord, y_coord, st, right, 1.0, 2, swp) {
-	if (state != TEMPORARY) {
+	if (st != TEMPORARY) {
 		setVisibility(false);
 	}
 }
 void Gold_Nugget::doSomething() {
+	switch (state) {
+	case DEAD:
+		break;
+	case PERMANENT:
+		if (!visible) {
+			SWP->makeVisible(GOLD);
+			return;
+		}
+		if (visible) {
+			if (SWP->pickUpItem(ICEMAN,GOLD)) {
+				SWP->increaseScore(10);
+			}
+		}
+		break;
+	//case TEMPORARY:
+	//	// FIX
+	//	if (SWP->pickUpItem(PROTESTER, GOLD)) { // FOR REG/HARDCORE PROTESTERS . DO IN PROTESTER CLASSES?
+	//		SWP->increaseScore(25);
+	//	}
+	//	break;
+	}
+}
+
+Oil_Barrel::Oil_Barrel(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp) :
+	Thing(IID_BARREL, x_coord, y_coord, st, right, 1.0, 2, swp) {
+	setVisibility(false);
+}
+void Oil_Barrel::doSomething() {
 	if (state == DEAD) {
 		return;
 	}
-	if (!visible && state == PERMANENT) {
-		SWP->makeVisible(GOLD); //nugget is invisible ** FIX ::: !VISIBLE
+	if (!visible) {
+		SWP->makeVisible(OIL);
 		return;
 	}
 	if (visible) {
-		SWP->pickUpItem(GOLD);
-		SWP->changePoints(10);
+		if (SWP->pickUpItem(ICEMAN,OIL)) {
+			SWP->increaseScore(1000);
+		}
+		if (SWP->allOilFound()) {
+			cerr << "FINAL SCORE: " << SWP->getScore() << endl; // FIX : ADVANCE TO NEXT LEVEL
+		}
 		return;
 	}
 }
+
 Temp_Thing::Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp):
 	Thing(ID, x_coord, y_coord, st, face, size, depth, swp), tick_limit(max_ticks) {}
-Sonar_Kit::Sonar_Kit(StudentWorld * swp):
-	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, std::max(100, 300-10*swp->getLevel()), swp) {}
+Sonar_Kit::Sonar_Kit(StudentWorld * swp) :
+	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
 void Sonar_Kit::doSomething(){
 	if (state == TEMPORARY) {
 		tick++;
 		if (!SWP->by_itself(getX(), getY(), 2)) {
 			state = DEAD;
 			SWP->playSound(SOUND_GOT_GOODIE);
-			SWP->changePoints(75);
+			SWP->increaseScore(75);
 		}
 		if (tick == tick_limit)
 			state = DEAD;
