@@ -66,6 +66,7 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 	//ID == 4: checks if only IceMan is within 3 pixels away
 	//ID == 3: checks if only IceMan is within 4 pixels away
 	//ID == 5 checks if any Person is within 3 pixels away and below passed in coordinates
+	//ID == 6 checks id any protester is within 3 pixels away
 
 	//this checks for objects in the game that are within a radius of 3 or 6
 	if ((ID != 4 && ID != 3) && Objects.size() != 0) {
@@ -73,7 +74,7 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 		int mult_radius = 1;// mult_radius will determine wheter to check for a radius of 3 or 6
 		if (ID == 1) // if ID equals 1 all objects will be checked if any other objects are within a radius of 6
 			mult_radius++;
-		if (ID == 5 || ID == 2) {//if ID equals 5 or 2 start will increment meaning of the objects in the game, not including iceman, only protestors and hardcore protestors will be checked for
+		if (ID == 2 || ID == 5 || ID == 6) {//if ID equals 2 or 5 or 6 start will increment meaning of the objects in the game, not including iceman, only protestors and hardcore protestors will be checked for
 			start++;
 		}
 		for (auto it = Objects.begin() + 6 * start; it != Objects.end(); it++) {//loop will either start at index 0 or index 6
