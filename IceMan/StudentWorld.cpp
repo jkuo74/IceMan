@@ -60,44 +60,45 @@ int StudentWorld::init() {
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int & ID) {
-	//ID == 5 checks if any Person is within 3 pixels away and below passed in coordinates
 	//ID == 0: checks if only Boulder is within 3 pixels away
 	//ID == 1: set up to check if any other object is within 6 pixels away
 	//ID == 2: checks if any person is within 3 pixels away
 	//ID == 4: checks if only IceMan is within 3 pixels away
 	//ID == 3: checks if only IceMan is within 4 pixels away
+	//ID == 5 checks if any Person is within 3 pixels away and below passed in coordinates
 
-	if ((ID != 4 && ID != 3) && Objects.size() != 0) {
-		int start = 0;
-		int mult_radius = 1;
-		if (ID == 1)
+	if ((ID != 4 && ID != 3) && Objects.size() != 0) {//this checks for objects in the game that are within a radius of 3 or 6
+		int start = 0;//start tells you what objects to check for
+		int mult_radius = 1;// mult_radius will determine wheter to check for a radius of 3 or 6
+		if (ID == 1) // if ID equals 1 all objects will be checked if any other objects are within a radius of 6
 			mult_radius++;
-		if (ID == 5 || ID == 2) {
+		if (ID == 5 || ID == 2) {//if ID equals 5 or 2 start will increment meaning only protestors and hardcore protestors will be checked for
 			start++;
 		}
-		for (auto it = Objects.begin() + 6 * start; it != Objects.end(); it++) {
-			for (auto it2 = it->begin(); it2 != it->end(); it2++)
+		for (auto it = Objects.begin() + 6 * start; it != Objects.end(); it++) {//loop will either start at index 0 or index 6
+			for (auto it2 = it->begin(); it2 != it->end(); it2++)//iterate through all elements in sub-vector-level
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= (mult_radius * 3.0)) { // distance is less than 6.0 or 3.0
-					if ((ID == -1) && (*it2)->getY() < y_coord) {
+					if ((ID == 5) && (*it2)->getY() < y_coord) { //if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 						(*it2)->annoy(100);
 						return false;
 					}
-					if (ID != -1)
+					if (ID != 5)//if ID is not five but something is within the radius, return false
 						return false;
 				}
-			if (ID == 0)
+			if (ID == 0)//makes it so that only checks the first sub-vector which is the boulder vector
 				break;
 		}
 	}
-	if ((ID == 2 || ID == 3 || ID == 4 || ID == 5) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) + 3)) {
+	//these lines of code checks if the Hero is within some radius
+	if ((ID == 2 || ID == 3 || ID == 4 || ID == 5) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) + 3)) { // if the ID is odd, it will check if within a radius of 4 otherwise 3
 		if (ID == 5 && Hero->getY() < y_coord) {
 			Hero->annoy(100);
 			return false;
 		}
-		if (ID != 5)
+		if (ID != 5)//if ID is not five but something is within the radius, return false
 			return false;
 	}
-	return true;
+	return true;//if nothing is nearby return true
 }
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
