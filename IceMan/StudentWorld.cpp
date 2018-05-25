@@ -33,7 +33,7 @@ int StudentWorld::init() {
 		vector<unique_ptr<Actor>> temp_object; 
 		Objects.push_back(std::move(temp_object));
 	}
-	int B = int B = min((static_cast<int>(getLevel()) / 2) + 2, 9); // 20;
+	int B = min((static_cast<int>(getLevel()) / 2) + 2, 9); // 20;
 	int n = 0;
 	while (n < B) {
 		int x_rand = (rand() % (initTunnelL - 3));
