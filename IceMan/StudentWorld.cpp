@@ -73,7 +73,7 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 		int mult_radius = 1;// mult_radius will determine wheter to check for a radius of 3 or 6
 		if (ID == 1) // if ID equals 1 all objects will be checked if any other objects are within a radius of 6
 			mult_radius++;
-		if (ID == 5 || ID == 2) {//if ID equals 5 or 2 start will increment meaning only protestors and hardcore protestors will be checked for
+		if (ID == 5 || ID == 2) {//if ID equals 5 or 2 start will increment meaning of the objects in the game, not including iceman, only protestors and hardcore protestors will be checked for
 			start++;
 		}
 		for (auto it = Objects.begin() + 6 * start; it != Objects.end(); it++) {//loop will either start at index 0 or index 6
