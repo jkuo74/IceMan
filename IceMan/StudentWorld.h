@@ -11,7 +11,7 @@
 #include <memory>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
-enum ObjType { BOULDER, GOLD, OIL, SONAR, SQUIRT, WATER, PROTESTOR, HARDCORE_PROTESTOR };
+enum ObjType { BOULDER, GOLD, OIL, SONAR, SQUIRT, WATER, PROTESTOR, HARDCORE_PROTESTOR, ICEMAN };
 class StudentWorld : public GameWorld
 {
 public:
@@ -25,18 +25,18 @@ public:
 	void removeIce(const int & x_coord, const int & y_coord);
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
-	void changePoints(const int & points);
 	bool makeVisible(ObjType obj);
-	bool pickUpItem(ObjType obj);
-	void addItem(const ObjType & ID);
+	bool pickUpItem(ObjType person, ObjType obj);
+	bool allOilFound();
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
-	std::shared_ptr<IceMan> getHero() { return Hero; };
+	//std::shared_ptr<IceMan> getHero() { return Hero; };
 	~StudentWorld();
 private:
-	int total_points;
-	int level;
-	int count;
+	//int total_points;
+	//int level;
+	//int count;
+	int oilInField;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
