@@ -67,7 +67,8 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 	//ID == 3: checks if only IceMan is within 4 pixels away
 	//ID == 5 checks if any Person is within 3 pixels away and below passed in coordinates
 
-	if ((ID != 4 && ID != 3) && Objects.size() != 0) {//this checks for objects in the game that are within a radius of 3 or 6
+	//this checks for objects in the game that are within a radius of 3 or 6
+	if ((ID != 4 && ID != 3) && Objects.size() != 0) {
 		int start = 0;//start tells you what objects to check for
 		int mult_radius = 1;// mult_radius will determine wheter to check for a radius of 3 or 6
 		if (ID == 1) // if ID equals 1 all objects will be checked if any other objects are within a radius of 6
@@ -89,6 +90,7 @@ bool StudentWorld::by_itself(const int & x_coord, const int & y_coord, const int
 				break;
 		}
 	}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//these lines of code checks if the Hero is within some radius
 	if ((ID == 2 || ID == 3 || ID == 4 || ID == 5) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= ((ID % 2) + 3)) { // if the ID is odd, it will check if within a radius of 4 otherwise 3
 		if (ID == 5 && Hero->getY() < y_coord) {
