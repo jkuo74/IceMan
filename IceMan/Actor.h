@@ -18,7 +18,7 @@ public:
 	virtual ~Actor() { SWP = nullptr; };
 
 protected:
-	StudentWorld * SWP;
+	shared_ptr<StudentWorld> SWP;
 	STATE state;
 	bool visible;
 };
@@ -65,8 +65,6 @@ public:
 	virtual void doSomething() {}
 	virtual void annoy(const int & damage) {};
 	virtual ~Thing() {};
-protected:
-	int tick;
 };
 class Ice : public Thing {
 public:
@@ -74,35 +72,39 @@ public:
 	virtual void doSomething() {}
 	virtual ~Ice() {};
 };
-class Boulder : public Thing {
-public:
-	Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp);
-	virtual void doSomething();
-	virtual ~Boulder() {};
-};
-class Gold_Nugget : public Thing {
-public:	
-	Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
-	virtual void doSomething();
-	virtual ~Gold_Nugget() {};
-};
 class Oil_Barrel : public Thing {
 public:
 	Oil_Barrel(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Oil_Barrel() {};
 };
-
 class Temp_Thing : public Thing {
 public:
-	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp = nullptr);
+	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st,
+		       const GraphObject::Direction & face, const double & size, const unsigned int & depth, 
+		       const int & max_ticks, StudentWorld * swp = nullptr);
+	virtual ~Temp_Thing() {}
 protected:
+	int ticks_elapsed;
 	int tick_limit;
 	//int pickedUpBy; // 0 = ICEMAN ONLY,  1 = PROTESTER ONLY, 3 = BOTH
+};
+class Boulder : public Temp_Thing {
+public:
+	Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Boulder() {};
+};
+class Gold_Nugget : public Temp_Thing {
+public:
+	Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Gold_Nugget() {};
 };
 class Sonar_Kit :public Temp_Thing {
 public:
 	Sonar_Kit(StudentWorld * swp);
 	virtual void doSomething();
+	virtual ~Sonar_Kit() {}
 };
 #endif // ACTOR_H_
