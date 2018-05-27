@@ -31,7 +31,7 @@ int Person::getHealth() {
 }
 
 IceMan::IceMan(StudentWorld * swp) :
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), itemArr{ 0 } {}
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), itemArr{ 0, 1, 5 } {}
 void IceMan::doSomething() {
 	int ch;
 	SWP->removeIce(getX(), getY());
@@ -206,6 +206,7 @@ void Sonar_Kit::doSomething(){
 		state = DEAD;
 		SWP->playSound(SOUND_GOT_GOODIE);
 		SWP->increaseScore(75);
+		SWP->addItem(SONAR);
 	}
 	if (ticks_elapsed == tick_limit)
 		state = DEAD;
