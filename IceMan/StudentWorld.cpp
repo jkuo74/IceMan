@@ -210,26 +210,20 @@ int StudentWorld::move() {
 }
 void StudentWorld::deleteDeadObjects() {
 	for (auto it = Objects.begin(); it != Objects.end(); it++) {
-		vector<int> toDelete;
-		int index = 0;
-		for (auto it2 = it->begin(); it2 != it->end(); it2++) {
+		auto it2 = it->begin();
+		while ( it2 != it->end()) {
 			if (!(*it2)->isAlive()) {
-//				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
+				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
 				(*it2).reset();
-//				cerr << it->size() << "|reseted|" << it->capacity() << endl;
-				toDelete.push_back(index);
+				auto b = (*it).erase(it2);
+				it2 = b;
+				cerr << it->size() << "|reseted|" << it->capacity() << endl;
 			}
-			index++;
-		}
-		if (toDelete.size() != 0) {
-			for (auto it2 = toDelete.begin(); it2 != toDelete.end(); it2++)
-			{
-//				cerr << it->size() << "|unchanged2|" << it->capacity() << endl;
-				it->erase((it->begin() + *it2));
-//				cerr << it->size() << "|shrunk|" << it->capacity() << endl;
+			else {
+				it2++;
 			}
-			it->shrink_to_fit();
 		}
+		it->shrink_to_fit();
 	}
 }
 void StudentWorld::updateDisplayText() {
