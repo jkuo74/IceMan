@@ -72,7 +72,10 @@ void IceMan::move() {
 	}
 }
 void IceMan::addItem(ObjType obj) {
-	if (obj > BOULDER && obj <= WATER) {  // checks if obj can be picked up
+	if (obj == WATER) {
+		itemArr[SQUIRT] += 5;
+	}
+	else if (obj < WATER) {  // checks if obj can be picked up
 		itemArr[obj]++;
 	}
 }
