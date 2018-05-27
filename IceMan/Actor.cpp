@@ -212,6 +212,19 @@ void Sonar_Kit::doSomething(){
 		state = DEAD;
 	}
 }
+void Water_Pool::doSomething() {
+	if (state == TEMPORARY) {
+		//ticks_elapsed++;
+		ticks_elapsed += 20;
+		if (SWP->personNearby(getX(), getY(), 3.0, 0, WATER)) {
+			state = DEAD;
+			SWP->playSound(SOUND_GOT_GOODIE);
+			SWP->addItem(SQUIRT);
+		}
+		if (ticks_elapsed == tick_limit)
+			state = DEAD;
+	}
+}
 Squirt::Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp):
 	Temp_Thing(IID_WATER_SPURT, x_coord, x_coord, TEMPORARY, face, 1.0, 1, 4, swp) {}
 void Squirt::doSomething() {
