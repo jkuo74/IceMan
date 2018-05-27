@@ -187,6 +187,8 @@ bool StudentWorld::pickUpItem(const ObjType & person, const ObjType & obj) {
 	return false;
 }
 int StudentWorld::move() {
+	if (allOilFound())
+		return GWSTATUS_FINISHED_LEVEL;
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++){
