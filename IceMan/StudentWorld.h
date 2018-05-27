@@ -19,6 +19,7 @@ public:
 	StudentWorld(std::string assetDir);
 	bool personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2);
 	bool objectNearby(const int & x_coord, const int & y_coord, const double & radius, const ObjType & ID2);
+	bool emptySpace(const int & x_coord, const int & y_coord);
 	virtual int init();
 	virtual int move();
 	void deleteDeadObjects();
@@ -26,13 +27,14 @@ public:
 	void removeIce(const int & x_coord, const int & y_coord);
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
-	bool allOilFound();
+	bool all_Oil_Found();
 	void addItem(const ObjType & ID);
 	void dropItem(const ObjType & ID); ///NOT COMPLETE
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
 	~StudentWorld();
 private:
+	int game_ticks;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
