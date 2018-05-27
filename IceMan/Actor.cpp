@@ -11,10 +11,6 @@ Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STA
 int Actor::getState() {
 	return state;
 }
-void Actor::setVisibility(const bool & v){
-	setVisible(v); 
-	visible = v;
-}
 bool Actor::isVisible() {
 	return visible;
 }
@@ -59,7 +55,7 @@ void IceMan::doSomething() {
 		case KEY_PRESS_UP:
 			if (up != dir)
 				setDirection(up);
-			else if (y_pos != 60 && !SWP->objectNearby(x_pos,y_pos + 1, 3.0, BOULDER))
+			else if (y_pos != 60 && !SWP->objectNearby(x_pos, y_pos + 1, 3.0, BOULDER))
 				moveTo(getX(), getY() + 1);
 			else
 				moveTo(getX(), getY());
@@ -92,6 +88,8 @@ void IceMan::doSomething() {
 		case KEY_PRESS_Z:
 			if (itemArr[SONAR] > 0) {
 				itemArr[SONAR]--;
+				SWP->objectNearby(x_pos, y_pos, 60, GOLD); // change radius to 12
+				SWP->objectNearby(x_pos, y_pos, 60, OIL);
 				SWP->playSound(SOUND_SONAR);
 			}
 		}
@@ -133,6 +131,7 @@ void Oil_Barrel::doSomething() {
 				state = DEAD;
 				SWP->increaseScore(1000);
 				SWP->addItem(OIL);
+				cerr << "OIL PICKED UP" << endl;
 			}
 		}
 	}
@@ -149,6 +148,7 @@ void Boulder::doSomething() {
 			state = TEMPORARY;
 		else if (state == TEMPORARY) {
 			ticks_elapsed++;
+			//ticks_elapsed += 20;
 			if (ticks_elapsed == tick_limit) {
 				state = FALLING;
 				SWP->playSound(SOUND_FALLING_ROCK);
@@ -183,49 +183,54 @@ void Gold_Nugget::doSomething() {
 				state = DEAD;
 				SWP->increaseScore(10);
 				SWP->addItem(GOLD);
+				cerr << "GOLD PICKED UP" << endl;
 			}
 		}
 		break;
 	case TEMPORARY:
-		// FIX
 		if (SWP->personNearby(getX(), getY(), 3.0, 1, GOLD)) { // FOR REG/HARDCORE PROTESTERS . DO IN PROTESTER CLASSES?
 			SWP->increaseScore(25);
 		}
 		ticks_elapsed++;
+		//ticks_elapsed += 20;
 		if (ticks_elapsed == tick_limit)
 			state = DEAD;
-			break;
+		break;
 	}
 }
-Sonar_Kit::Sonar_Kit(StudentWorld * swp):
+Sonar_Kit::Sonar_Kit(StudentWorld * swp) :
 	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, std::max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
-void Sonar_Kit::doSomething(){
+void Sonar_Kit::doSomething() {
 	if (state == TEMPORARY) {
 		ticks_elapsed++;
-	if (SWP->personNearby(getX(), getY(), 3.0, 0, SONAR)) {
-		state = DEAD;
-		SWP->playSound(SOUND_GOT_GOODIE);
-		SWP->increaseScore(75);
-		SWP->addItem(SONAR);
-	}
-	if (ticks_elapsed == tick_limit)
-		state = DEAD;
-	}
-}
-void Water_Pool::doSomething() {
-	if (state == TEMPORARY) {
-		//ticks_elapsed++;
-		ticks_elapsed += 20;
-		if (SWP->personNearby(getX(), getY(), 3.0, 0, WATER)) {
+		if (SWP->personNearby(getX(), getY(), 3.0, 0, SONAR)) {
 			state = DEAD;
 			SWP->playSound(SOUND_GOT_GOODIE);
-			SWP->addItem(SQUIRT);
+			SWP->increaseScore(75);
+			SWP->addItem(SONAR);
+			cerr << "SONAR PICKED UP" << endl;
 		}
 		if (ticks_elapsed == tick_limit)
 			state = DEAD;
 	}
 }
-Squirt::Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp):
+Water_Pool::Water_Pool(const int & x_coord, const int & y_coord, StudentWorld * swp):
+	Temp_Thing(IID_WATER_POOL, x_coord, y_coord,TEMPORARY, right, 1.0, 2, std::max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
+void Water_Pool::doSomething() {
+	if (state == TEMPORARY) {
+		ticks_elapsed++;
+		//ticks_elapsed += 20;
+		if (SWP->personNearby(getX(), getY(), 3.0, 0, WATER)) {
+			state = DEAD;
+			SWP->playSound(SOUND_GOT_GOODIE);
+			SWP->addItem(SQUIRT);
+			cerr << "WATER PICKED UP" << endl;
+		}
+		if (ticks_elapsed == tick_limit)
+			state = DEAD;
+	}
+}
+Squirt::Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp) :
 	Temp_Thing(IID_WATER_SPURT, x_coord, x_coord, TEMPORARY, face, 1.0, 1, 4, swp) {}
 void Squirt::doSomething() {
 
