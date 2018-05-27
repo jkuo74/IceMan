@@ -1,6 +1,7 @@
 #include "StudentWorld.h"
 #include <string>
-#include<iostream>
+#include <iostream>
+#include <iomanip>
 using namespace std;
 
 StudentWorld * StudentWorld::SWP;
@@ -234,10 +235,10 @@ void StudentWorld::deleteDeadObjects() {
 }
 void StudentWorld::updateDisplayText() {
 	stringstream os;
-	os << "Lvl: " << getLevel() << " Lives: " << getLives()
-		<< " Hlth:" << Hero->getHealth() * 10 << "% Wtr: " << Objects[SQUIRT].size()
+	os << "Lvl: " << setw(2) << getLevel() << " Lives: " << getLives()
+		<< " Hlth: " << setw(3) << Hero->getHealth() * 10 << "% Wtr: " << setw(2) <<  Hero->getNumItems(SQUIRT)
 		<< " Gld: " << Hero->getNumItems(GOLD) << " Oil Left: " << Objects[OIL].size()
-		<< " Sonar: " << Hero->getNumItems(SONAR) << " Scr: " << getScore();
+		<< " Sonar: " << Hero->getNumItems(SONAR) << " Scr: " << setfill('0') << setw(6)<< getScore();
 	setGameStatText(os.str());
 }
 void StudentWorld::cleanUp() {
