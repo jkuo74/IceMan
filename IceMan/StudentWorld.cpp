@@ -169,7 +169,7 @@ bool StudentWorld::pickUpItem(const ObjType & person, const ObjType & obj) {
 					break;
 				case OIL:
 					playSound(SOUND_FOUND_OIL);
-					cout << "NUM OIL: " << Hero->getNumItems(OIL) << endl;
+					cout << "NUM OIL: " << Objects[OIL].size() << endl;
 				}
 				return true;
 			}
