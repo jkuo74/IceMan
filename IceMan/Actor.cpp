@@ -73,7 +73,7 @@ void IceMan::doSomething() {
 			break;
 		case KEY_PRESS_SPACE:
 			if (itemArr[SQUIRT] > 0) {
-				SWP->addItem(SQUIRT);
+				SWP->dropItem(SQUIRT);
 				SWP->playSound(SOUND_PLAYER_SQUIRT);
 				itemArr[SQUIRT]--;
 			}
@@ -97,7 +97,7 @@ void IceMan::doSomething() {
 }
 
 void IceMan::addItem(ObjType obj) {
-	if (obj == WATER) {
+	if (obj == WATER || obj == SQUIRT) {
 		itemArr[SQUIRT] += 5;
 	}
 	else if (obj < SQUIRT) {
