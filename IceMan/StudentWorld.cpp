@@ -108,7 +108,8 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 		if (sqrt(pow((*it)->getX() - x_coord, 2.0) + pow((*it)->getY() - y_coord, 2.0)) <= radius) {
 			if (radius != 6.0 && ID2 != BOULDER)
 				(*it)->setVisibility(true);
-			return true;
+			else
+				return true;
 		}
 	}
 	return false;
