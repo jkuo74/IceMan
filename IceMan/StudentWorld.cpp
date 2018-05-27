@@ -83,7 +83,7 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 	//ID1 == 2 check if either are nearby
 
 	if (ID1 == 1 || ID1 == 2) {
-		for (auto it = Objects.begin() + 6; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
+		for (auto it = Objects.begin() + PROTESTER; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)//iterate through all elements in sub-vector-level
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= radius) { // distance is less than 6.0 or 3.0
 					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
