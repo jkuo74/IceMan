@@ -12,12 +12,13 @@
 #include<sstream>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
-enum ObjType { BOULDER, GOLD, OIL, SONAR, SQUIRT, WATER, PROTESTER, HARDCORE_PROTESTER, ICEMAN };
+enum ObjType { GOLD, SONAR, SQUIRT, OIL, WATER, BOULDER, PROTESTER, HARDCORE_PROTESTER, ICEMAN };
 class StudentWorld : public GameWorld
 {
 public:
 	StudentWorld(std::string assetDir);
-	bool by_itself(const int & x_coord, const int & y_coord, const int & ID);//checks that no object is placed within 6 blocks apart
+	bool personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2);
+	bool objectNearby(const int & x_coord, const int & y_coord, const double & radius, const ObjType & ID2);
 	virtual int init();
 	virtual int move();
 	void deleteDeadObjects();
@@ -25,16 +26,13 @@ public:
 	void removeIce(const int & x_coord, const int & y_coord);
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
-	bool makeVisible(const ObjType & obj);
-	bool pickUpItem(const ObjType & person, const ObjType & obj);
 	bool allOilFound();
-	void addItem(const ObjType & ID); ///NOT COMPLETE
+	void addItem(const ObjType & ID);
+	void dropItem(const ObjType & ID); ///NOT COMPLETE
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
-	//std::shared_ptr<IceMan> getHero() { return Hero; };
 	~StudentWorld();
 private:
-	int oilInField;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
