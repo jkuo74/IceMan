@@ -7,8 +7,7 @@ const static int initTunnelL = 30;
 const static int initTunnelR = 33;
 const static int sizeOfObject = 4;
 
-StudentWorld::StudentWorld(string assetDir) :
-	GameWorld(assetDir), oilInField(0) {
+StudentWorld::StudentWorld(string assetDir) :GameWorld(assetDir), game_ticks(0) {
 	SWP = this;
 }
 GameWorld * createStudentWorld(string assetDir) {
@@ -41,13 +40,13 @@ int StudentWorld::init() {
 			x_rand += (initTunnelR + 1);
 		int y_rand = (rand() % 36) + 20;
 		if (by_itself(x_rand, y_rand, 1)) {
-			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
+			Objects[BOULDER].push_back(make_unique<Boulder>(x_rand, y_rand, this));
 			removeIce(x_rand, y_rand);
-			cerr << "(" << x_rand << "," << y_rand << ")" << endl;
+			//cerr << "(" << x_rand << "," << y_rand << ")" << endl;
 			n++;
 		}
 	}//add boulders
-	int num_gold_nuggets = min((5 - static_cast<int>(getLevel()) / 2), 2); //num of gold  nuggets
+	int num_gold_nuggets = min((5 - static_cast<int>(getLevel()) / 2), 2); 
 	n = 0;
 	while (n < num_gold_nuggets) {
 		int x_rand = (rand() % (initTunnelL - sizeOfObject + 1));
@@ -56,9 +55,9 @@ int StudentWorld::init() {
 			x_rand += (initTunnelR + 1);
 		int y_rand = (rand() % 56);
 		if (by_itself(x_rand, y_rand, 1)) {
-			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
+			Objects[GOLD].push_back(make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
 			n++;
-			cerr << "(" << x_rand << "," << y_rand << ")" << endl;
+			//cerr << "(" << x_rand << "," << y_rand << ")" << endl;
 		}
 	} // add gold
 	int num_oil_barrels = min(2 + static_cast<int>(getLevel()), 21);
@@ -70,9 +69,9 @@ int StudentWorld::init() {
 			x_rand += (initTunnelR + 1);
 		int y_rand = (rand() % 56);
 		if (by_itself(x_rand, y_rand, 1)) {
-			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
+			Objects[OIL].push_back(make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
 			n++;
-			cerr << " (" << x_rand << "," << y_rand << ")" << endl;
+			cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
 		}
 	}
 	return GWSTATUS_CONTINUE_GAME;
@@ -143,7 +142,7 @@ bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
 	return false;
 }
 bool StudentWorld::makeVisible(const ObjType & obj) {
-	if (obj == GOLD || obj == OIL)
+	if (obj == GOLD || obj == OIL) {
 		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
 			if ((*it)->isAlive() && !by_itself((*it)->getX(), (*it)->getY(), 3)) {
 				(*it)->setVisibility(true);
@@ -151,13 +150,14 @@ bool StudentWorld::makeVisible(const ObjType & obj) {
 				return true;
 			}
 		}
+	}
 	return false;
 }
 bool StudentWorld::allOilFound() {
-	return Objects[OIL].size() == 0;
+	return Objects[OIL].empty();
 }
 bool StudentWorld::pickUpItem(const ObjType & person, const ObjType & obj) {
-	if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER)
+	if (obj != BOULDER && obj != PROTESTER && obj != HARDCORE_PROTESTER) {
 		for (auto it = Objects[obj].begin(); it != Objects[obj].end(); it++) {
 			if (person == ICEMAN && !by_itself((*it)->getX(), (*it)->getY(), 4)) {
 				(*it)->setState(DEAD);
@@ -184,11 +184,13 @@ bool StudentWorld::pickUpItem(const ObjType & person, const ObjType & obj) {
 				return true;
 			}
 		}
+	}
 	return false;
 }
 int StudentWorld::move() {
-	if (allOilFound())
+	if (allOilFound()) {
 		return GWSTATUS_FINISHED_LEVEL;
+	}
 	updateDisplayText();
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
@@ -198,6 +200,10 @@ int StudentWorld::move() {
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
+		if (game_ticks == getLevel() * 25 + 300) { //
+			Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
+		}
+		game_ticks++;
 		return GWSTATUS_CONTINUE_GAME;
 	}
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
