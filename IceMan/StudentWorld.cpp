@@ -136,7 +136,7 @@ bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
 	return false;
 }
 bool StudentWorld::allOilFound() {
-	return Objects[OIL].size() == 0;
+	return Objects[OIL].empty();
 }
 
 void StudentWorld::addItem(const ObjType & ID) {
@@ -150,8 +150,11 @@ void StudentWorld::dropItem(const ObjType & ID) {
 	}
 }
 int StudentWorld::move() {
-	if (allOilFound())
+	if (allOilFound()) {
+		//cerr << "FINAL SCORE: " << SWP->getScore() << endl; // FIX : ADVANCE TO NEXT LEVEL
+		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
+	}
 	updateDisplayText();
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
@@ -160,8 +163,23 @@ int StudentWorld::move() {
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
-		if (game_ticks == getLevel() * 25 + 300) //
-			Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
+		if (game_ticks % (getLevel() * 25 + 300) == (getLevel() + 1)) { //
+			int sonar_or_water = rand() % 5;
+			if (sonar_or_water == 0) {
+				Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
+				cerr << "SONAR ADDED" << endl;
+			}
+			else {
+				int x;
+				int y;
+				do  {
+					x = rand() % 60;
+					y = rand() % 60;
+				} while (IceBelow(x, y)); //FIX: CHECK FOR ALL ITEMS
+				Objects[WATER].push_back(make_unique<Water_Pool>(x,y,this));
+				cerr << "WATER ADDED" << endl;
+			}
+		}
 		game_ticks++;
 		return GWSTATUS_CONTINUE_GAME;
 	}
