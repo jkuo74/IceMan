@@ -2,6 +2,7 @@
 #include <string>
 #include<iostream>
 using namespace std;
+
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
@@ -43,7 +44,7 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER)) {
 			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
 			removeIce(x_rand, y_rand);
-			cerr << "(" << x_rand << "," << y_rand << ")" << endl;
+//			cerr << "BOULDERS (" << x_rand << "," << y_rand << ")" << endl;
 			n++;
 		}
 	}//add boulders
@@ -58,7 +59,7 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD)) {
 			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
 			n++;
-			cerr << "(" << x_rand << "," << y_rand << ")" << endl;
+			cerr << "GOLD (" << x_rand << "," << y_rand << ")" << endl;
 		}
 	} // add gold
 	int num_oil_barrels = min(2 + static_cast<int>(getLevel()), 21);
@@ -72,7 +73,7 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD) && !objectNearby(x_rand, y_rand, 6.0, OIL)) {
 			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
 			n++;
-			cerr << "(" << x_rand << "," << y_rand << ")" << endl;
+			cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
 		}
 	}
 	return GWSTATUS_CONTINUE_GAME;
@@ -83,7 +84,7 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 	//ID1 == 2 check if either are nearby
 
 	if (ID1 == 1 || ID1 == 2) {
-		for (auto it = Objects.begin() + PROTESTER; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
+		for (auto it = Objects.begin() + 6; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)//iterate through all elements in sub-vector-level
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= radius) { // distance is less than 6.0 or 3.0
 					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
@@ -94,7 +95,7 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 				}
 		}
 	}
-	if ((ID1 == 0 || ID1 == 2) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= radius) { 
+	if ((ID1 == 0 || ID1 == 2) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= radius) {
 		if ((ID2 == BOULDER) && Hero->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 			Hero->annoy(100);
 		return true;
@@ -114,6 +115,22 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	}
 	return false;
 }
+bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+				return false;
+			}
+		}
+	}
+	for (auto it = Objects.begin(); it != Objects.end(); it++) {
+		for (auto it2 = it->begin(); it2 != it->end(); it2++)
+			if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= 4) { 
+				return false;
+			}
+	}
+	return true;
+}
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
@@ -132,11 +149,11 @@ bool StudentWorld::IceBelow(const int & x_coord, const int & y_coord) {
 bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
 	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
 		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
-				return true;
+			return true;
 	}
 	return false;
 }
-bool StudentWorld::allOilFound() {
+bool StudentWorld::all_Oil_Found() {
 	return Objects[OIL].empty();
 }
 
@@ -151,7 +168,7 @@ void StudentWorld::dropItem(const ObjType & ID) {
 	}
 }
 int StudentWorld::move() {
-	if (allOilFound()) {
+	if (all_Oil_Found()) {
 		//cerr << "FINAL SCORE: " << SWP->getScore() << endl; // FIX : ADVANCE TO NEXT LEVEL
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
@@ -164,7 +181,7 @@ int StudentWorld::move() {
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
-		if (game_ticks % (getLevel() * 25 + 300) == (getLevel() + 1)) { //
+		if (game_ticks  % 300 == 0){ //(rand() % (getLevel() * 25 + 300) == getLevel()) { 
 			int sonar_or_water = rand() % 5;
 			if (sonar_or_water == 0) {
 				Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
@@ -173,15 +190,16 @@ int StudentWorld::move() {
 			else {
 				int x;
 				int y;
-				do  {
+				do {
 					x = rand() % 60;
 					y = rand() % 60;
-				} while (IceBelow(x, y)); //FIX: CHECK FOR ALL ITEMS
-				Objects[WATER].push_back(make_unique<Water_Pool>(x,y,this));
-				cerr << "WATER ADDED" << endl;
+				} while (!emptySpace(x,y));
+				Objects[WATER].push_back(make_unique<Water_Pool>(x, y, this));
+				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
 		}
-		game_ticks++;
+		//game_ticks++;
+		game_ticks += 20;
 		return GWSTATUS_CONTINUE_GAME;
 	}
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
@@ -196,9 +214,9 @@ void StudentWorld::deleteDeadObjects() {
 		int index = 0;
 		for (auto it2 = it->begin(); it2 != it->end(); it2++) {
 			if (!(*it2)->isAlive()) {
-				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
+//				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
 				(*it2).reset();
-				cerr << it->size() << "|reseted|" << it->capacity() << endl;
+//				cerr << it->size() << "|reseted|" << it->capacity() << endl;
 				toDelete.push_back(index);
 			}
 			index++;
@@ -206,21 +224,20 @@ void StudentWorld::deleteDeadObjects() {
 		if (toDelete.size() != 0) {
 			for (auto it2 = toDelete.begin(); it2 != toDelete.end(); it2++)
 			{
-				cerr << it->size() << "|unchanged2|" << it->capacity() << endl;
+//				cerr << it->size() << "|unchanged2|" << it->capacity() << endl;
 				it->erase((it->begin() + *it2));
-				cerr << it->size() << "|shrunk|" << it->capacity() << endl;
+//				cerr << it->size() << "|shrunk|" << it->capacity() << endl;
 			}
 			it->shrink_to_fit();
 		}
 	}
 }
-void StudentWorld::updateDisplayText()
-{
+void StudentWorld::updateDisplayText() {
 	stringstream os;
-	os << "Lvl: " << getLevel() << " Lives: " << getLives() 
-	<< " Hlth:" << Hero->getHealth() * 10 << "% Wtr: " << Objects[SQUIRT].size() 
-	<< " Gld: " << Objects[GOLD].size() << " Oil Left: " << Objects[OIL].size() 
-	<< " Sonar: " << Objects[SONAR].size() << " Scr: " << getScore();
+	os << "Lvl: " << getLevel() << " Lives: " << getLives()
+		<< " Hlth:" << Hero->getHealth() * 10 << "% Wtr: " << Objects[SQUIRT].size()
+		<< " Gld: " << Objects[GOLD].size() << " Oil Left: " << Objects[OIL].size()
+		<< " Sonar: " << Hero->getNumItems(SONAR) << " Scr: " << getScore();
 	setGameStatText(os.str());
 }
 void StudentWorld::cleanUp() {
