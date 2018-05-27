@@ -18,7 +18,7 @@ public:
 	virtual ~Actor() { SWP = nullptr; };
 
 protected:
-	shared_ptr<StudentWorld> SWP;
+	StudentWorld * SWP;
 	STATE state;
 	bool visible;
 };
