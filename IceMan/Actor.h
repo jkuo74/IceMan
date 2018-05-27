@@ -4,7 +4,7 @@
 #include "GraphObject.h"
 class StudentWorld;
 enum ObjType;
-enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, USED, DEAD };
+enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
