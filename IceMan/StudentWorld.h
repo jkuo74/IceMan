@@ -12,7 +12,7 @@
 #include<sstream>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
-enum ObjType { BOULDER, GOLD, OIL, SONAR, WATER, SQUIRT, PROTESTOR, HARDCORE_PROTESTOR, ICEMAN };
+enum ObjType { BOULDER, GOLD, OIL, SONAR, WATER, SQUIRT, PROTESTER, HARDCORE_PROTESTER, ICEMAN };
 class StudentWorld : public GameWorld
 {
 public:
@@ -22,14 +22,12 @@ public:
 	virtual int move();
 	void deleteDeadObjects();
 	void updateDisplayText();
-	int getLevel();
 	void removeIce(const int & x_coord, const int & y_coord);
 	bool IceBelow(const int & x_coord, const int & y_coord);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	bool makeVisible(const ObjType & obj);
 	bool pickUpItem(const ObjType & person, const ObjType & obj);
 	bool allOilFound();
-	void changePoints(const int & points);
 	void addItem(const ObjType & ID); ///NOT COMPLETE
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
