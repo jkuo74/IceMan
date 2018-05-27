@@ -236,7 +236,7 @@ void StudentWorld::updateDisplayText() {
 	stringstream os;
 	os << "Lvl: " << getLevel() << " Lives: " << getLives()
 		<< " Hlth:" << Hero->getHealth() * 10 << "% Wtr: " << Objects[SQUIRT].size()
-		<< " Gld: " << Objects[GOLD].size() << " Oil Left: " << Objects[OIL].size()
+		<< " Gld: " << Hero->getNumItems(GOLD) << " Oil Left: " << Objects[OIL].size()
 		<< " Sonar: " << Hero->getNumItems(SONAR) << " Scr: " << getScore();
 	setGameStatText(os.str());
 }
