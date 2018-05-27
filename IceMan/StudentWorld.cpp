@@ -170,11 +170,9 @@ void StudentWorld::dropItem(const ObjType & ID) {
 }
 int StudentWorld::move() {
 	if (all_Oil_Found()) {
-		//cerr << "FINAL SCORE: " << SWP->getScore() << endl; // FIX : ADVANCE TO NEXT LEVEL
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
-	updateDisplayText();
 	if (Hero->getHealth() > 0) {
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
@@ -199,8 +197,9 @@ int StudentWorld::move() {
 				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
 		}
-		//game_ticks++;
-		game_ticks += 20;
+		game_ticks++;
+		//game_ticks += 20;
+		updateDisplayText();
 		return GWSTATUS_CONTINUE_GAME;
 	}
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
