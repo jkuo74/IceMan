@@ -36,9 +36,6 @@ public:
 	//std::shared_ptr<IceMan> getHero() { return Hero; };
 	~StudentWorld();
 private:
-	//int total_points;
-	//int level;
-	//int count;
 	int oilInField;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
