@@ -172,7 +172,7 @@ void Sonar_Kit::doSomething(){
 		if (!SWP->by_itself(getX(), getY(), 2)) {
 			state = DEAD;
 			SWP->playSound(SOUND_GOT_GOODIE);
-			SWP->changePoints(75);
+			SWP->increaseScore(75);
 		}
 		if (ticks_elapsed == tick_limit)
 			state = DEAD;
