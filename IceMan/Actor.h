@@ -101,6 +101,12 @@ public:
 	virtual void doSomething();
 	virtual ~Sonar_Kit() {}
 };
+class Water_Pool : public Temp_Thing {
+public:
+	Water_Pool::Water_Pool(const int & x_coord, const int & y_coord, StudentWorld * swp);
+	void doSomething();
+	~Water_Pool() {};
+};
 class Squirt : public Temp_Thing {
 public:
 	Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp);
