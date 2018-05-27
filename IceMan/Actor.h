@@ -4,7 +4,7 @@
 #include "GraphObject.h"
 class StudentWorld;
 enum ObjType;
-enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, USED, DEAD };
+enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
@@ -14,7 +14,7 @@ public:
 	bool isAlive();
 	virtual void annoy(const int & damage) = 0;
 	void setState(const STATE & st) { state = st; };
-	void setVisibility(const bool & v) { setVisible(v); visible = v; };
+	void setVisibility(const bool & v);
 	virtual ~Actor() { SWP = nullptr; };
 
 protected:
@@ -25,7 +25,6 @@ protected:
 class Person : public Actor {
 public:
 	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face = right, const double & size = 1.0, const unsigned int & depth = 0, StudentWorld * swp = nullptr);
-	virtual void move() = 0;
 	virtual void annoy(const int & damage);
 	int getHealth();
 	virtual ~Person() {};
@@ -36,29 +35,22 @@ protected:
 class IceMan : public Person {
 public:
 	IceMan(StudentWorld * swp = nullptr);
-	void move();
 	virtual void doSomething();
-		void addItem(ObjType item); 
+	void addItem(ObjType item);
 	int getNumItems(ObjType item);
 	//virtual bool pickUpItem(ObjType obj);
 	virtual ~IceMan() {};
 private:
-	//int num_Gold;
-	//int num_Oil;
-	//int num_Sonar;
-	//int num_Water;
-	int itemArr[5]; // 0=BOULDER, 1=GOLD, 2=OIL, 3=SONAR, 4 = WATER
+	int itemArr[3]; // 0=GOLD, 1=SONAR, 2=SQUIRT
 };
-//class Regular_Protester : public Person
-//{
-//public:
-//	
-//
-//};
-//class Hardcore_Protester : public Regular_Protester
-//{
-//public:
-//};
+/*class Regular_Protester : public Person
+{
+public:
+};
+class Hardcore_Protester : public Regular_Protester
+{
+public:
+};*/
 class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
@@ -81,9 +73,11 @@ public:
 class Temp_Thing : public Thing {
 public:
 	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st,
-		       const GraphObject::Direction & face, const double & size, const unsigned int & depth, 
-		       const int & max_ticks, StudentWorld * swp = nullptr);
+		const GraphObject::Direction & face, const double & size, const unsigned int & depth,
+		const int & max_ticks, StudentWorld * swp = nullptr);
+	virtual void doSomething() {};
 	virtual ~Temp_Thing() {}
+
 protected:
 	int ticks_elapsed;
 	int tick_limit;
@@ -106,5 +100,11 @@ public:
 	Sonar_Kit(StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Sonar_Kit() {}
+};
+class Squirt : public Temp_Thing {
+public:
+	Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Squirt() {};
 };
 #endif // ACTOR_H_
