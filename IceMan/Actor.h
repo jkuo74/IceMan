@@ -24,7 +24,7 @@ private:
 };
 class Person : public Actor {
 public:
-	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face = right, const double & size = 1.0, const unsigned int & depth = 0, StudentWorld * swp = nullptr);
+	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size = 1.0, const unsigned int & depth = 0, const int & health = 0, StudentWorld * swp = nullptr);
 	virtual void annoy(const int & damage);
 	int getHealth();
 	virtual ~Person() {};
@@ -41,14 +41,17 @@ public:
 private:
 	int itemArr[3]; // 0=GOLD, 1=SONAR, 2=SQUIRT
 };
-/*class Regular_Protester : public Person
-{
+
+class Regular_Protester : public Person {
 public:
+	Regular_Protester(StudentWorld * swp);
+	virtual void doSomething();
+	virtual ~Regular_Protester() {};
 };
-class Hardcore_Protester : public Regular_Protester
-{
-public:
-};*/
+//class Hardcore_Protester : public Regular_Protester
+//{
+//public:
+//};
 class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
