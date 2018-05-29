@@ -25,7 +25,7 @@ public:
 	void deleteDeadObjects();
 	void updateDisplayText();
 	void removeIce(const int & x_coord, const int & y_coord);
-	bool IceBelow(const int & x_coord, const int & y_coord);
+	bool IceAround(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	bool all_Oil_Found();
 	void addItem(const ObjType & ID);
