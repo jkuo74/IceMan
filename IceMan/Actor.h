@@ -8,16 +8,16 @@ enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
-	int getState();
+	STATE getState();
 	virtual void doSomething() = 0;
 	bool isVisible();
 	bool isAlive();
 	virtual void annoy(const int & damage) = 0;
 	void setState(const STATE & st) { state = st; };
-	void setVisibility(const bool & v) { setVisible(v); visible = v; };
-	virtual ~Actor() { SWP = nullptr; };
-
-protected:
+	void setVisibility(const bool & v);
+	StudentWorld * getSWP();
+	virtual ~Actor() { SWP = nullptr;};
+private:
 	StudentWorld * SWP;
 	STATE state;
 	bool visible;
@@ -28,29 +28,27 @@ public:
 	virtual void annoy(const int & damage);
 	int getHealth();
 	virtual ~Person() {};
-protected:
+private:
 	int health_points;
 };
 class IceMan : public Person {
 public:
 	IceMan(StudentWorld * swp = nullptr);
-	void doSomething();
+	virtual void doSomething();
 	void addItem(ObjType item);
 	int getNumItems(ObjType item);
 	virtual ~IceMan() {};
 private:
 	int itemArr[3]; // 0=GOLD, 1=SONAR, 2=SQUIRT
 };
-//class Regular_Protester : public Person
-//{
-//public:
-//	
-//
-//};
-//class Hardcore_Protester : public Regular_Protester
-//{
-//public:
-//};
+/*class Regular_Protester : public Person
+{
+public:
+};
+class Hardcore_Protester : public Regular_Protester
+{
+public:
+};*/
 class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
@@ -61,52 +59,58 @@ public:
 class Ice : public Thing {
 public:
 	Ice(const int & x_coord, const int & y_coord, StudentWorld * swp = nullptr);
-	void doSomething() {}
+	virtual void doSomething() {}
 	~Ice() {};
 };
 class Oil_Barrel : public Thing {
 public:
 	Oil_Barrel(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
-	void doSomething();
-	~Oil_Barrel() {};
+	virtual void doSomething();
+	virtual ~Oil_Barrel() {};
 };
-
 class Temp_Thing : public Thing {
 public:
-	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp = nullptr);
-protected:
+	Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st,
+		const GraphObject::Direction & face, const double & size, const unsigned int & depth,
+		const int & max_ticks, StudentWorld * swp = nullptr);
+	virtual void doSomething() {};
+	int getTicksElapsed();
+	int getTicksLimit();
+	void incrementTick();
+	bool timeUp();
+	virtual ~Temp_Thing() {}
+private:
 	int ticks_elapsed;
 	int tick_limit;
-	//int pickedUpBy; // 0 = ICEMAN ONLY,  1 = PROTESTER ONLY, 3 = BOTH
 };
 class Boulder : public Temp_Thing {
 public:
 	Boulder(const int & x_coord, const int & y_coord, StudentWorld * swp);
-	void doSomething();
-	~Boulder() {};
+	virtual void doSomething();
+	virtual ~Boulder() {};
 };
 class Gold_Nugget : public Temp_Thing {
 public:
 	Gold_Nugget(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp);
-	void doSomething();
-	~Gold_Nugget() {};
+	virtual void doSomething();
+	virtual ~Gold_Nugget() {};
 };
 class Sonar_Kit :public Temp_Thing {
 public:
 	Sonar_Kit(StudentWorld * swp);
-	void doSomething();
-	~Sonar_Kit() {};
+	virtual void doSomething();
+	virtual ~Sonar_Kit() {}
 };
 class Water_Pool : public Temp_Thing {
 public:
 	Water_Pool::Water_Pool(const int & x_coord, const int & y_coord, StudentWorld * swp);
 	void doSomething();
-	~Water_Pool() {};
+	virtual ~Water_Pool() {};
 };
 class Squirt : public Temp_Thing {
 public:
 	Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp);
-	void doSomething();
-	~Squirt() {};
+	virtual void doSomething();
+	virtual ~Squirt() {};
 };
 #endif // ACTOR_H_
