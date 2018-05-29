@@ -30,7 +30,7 @@ public:
 	bool all_Oil_Found();
 	void addItem(const ObjType & ID);
 	void dropItem(const ObjType & ID); ///NOT COMPLETE
-	virtual void cleanUp();
+	virtual void cleanUp(); // WHY IS THIS VIRTUAL?
 	static StudentWorld* getInstance();
 	~StudentWorld();
 private:
