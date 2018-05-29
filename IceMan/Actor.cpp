@@ -24,8 +24,8 @@ bool Actor::isVisible() {
 bool Actor::isAlive() {
 	return state != DEAD;
 }
-Person::Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
-	Actor(ID, x_coord, y_coord, st, right, size, depth, swp), health_points(10) {}
+Person::Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & health, StudentWorld * swp) :
+	Actor(ID, x_coord, y_coord, st, face, size, depth, swp), health_points(health) {}
 void Person::annoy(const int & damage) {
 	health_points -= damage;
 }
@@ -96,8 +96,8 @@ void IceMan::doSomething() {
 			if (itemArr[SONAR] > 0) {
 				itemArr[SONAR]--;
 				getSWP()->playSound(SOUND_SONAR);
-				getSWP()->objectNearby(x_pos, y_pos, 30.0, GOLD);
-				getSWP()->objectNearby(x_pos, y_pos, 30.0, OIL);
+				getSWP()->objectNearby(x_pos, y_pos, 60.0, GOLD); //FIX: CHANGE RADIUS TO 12
+				getSWP()->objectNearby(x_pos, y_pos, 60.0, OIL);
 			}
 		}
 	}
@@ -112,9 +112,20 @@ void IceMan::addItem(ObjType obj) {
 	}
 }
 int IceMan::getNumItems(ObjType obj) {
-	if (obj > WATER) // checks if obj can be picked up FIX: BOULDER = 0
+	if (obj > OIL) 
 		return -1;
 	return itemArr[obj];
+}
+Regular_Protester:: Regular_Protester(StudentWorld * swp) : 
+	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 0, 5, swp) {
+
+}
+void Regular_Protester::doSomething(){
+	int dir = rand() % 4;
+	switch (dir) {
+
+	}
+	moveTo(getX() - 1, getY());
 }
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp) {}
@@ -216,7 +227,7 @@ void Gold_Nugget::doSomething() {
 	}
 }
 Sonar_Kit::Sonar_Kit(StudentWorld * swp):
-	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, std::max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
+	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
 void Sonar_Kit::doSomething(){
 	if (getState() == TEMPORARY) {
 		incrementTick();
@@ -231,7 +242,7 @@ void Sonar_Kit::doSomething(){
 	}
 }
 Water_Pool::Water_Pool(const int & x_coord, const int & y_coord, StudentWorld * swp) :
-	Temp_Thing(IID_WATER_POOL, x_coord, y_coord, TEMPORARY, right, 1.0, 2, std::max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
+	Temp_Thing(IID_WATER_POOL, x_coord, y_coord, TEMPORARY, right, 1.0, 2, max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
 void Water_Pool::doSomething() {
 	if (getState() == TEMPORARY) {
 		incrementTick();
