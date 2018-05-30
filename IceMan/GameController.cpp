@@ -1,4 +1,4 @@
-#include "freeglut.h"
+	#include "freeglut.h"
 #include "GameController.h"
 #include "GameWorld.h"
 #include "GameConstants.h"
@@ -277,7 +277,7 @@ void GameController::doSomething()
 				}
 			}
 			break;
-		/*case cleanup:
+		case cleanup:
 			m_gw->cleanUp();
 			setGameState(init);
 			break;
@@ -291,7 +291,7 @@ void GameController::doSomething()
 			m_secondMessage = "Press Enter to quit...";
 			setGameState(prompt);
 			m_nextStateAfterPrompt = quit;
-			break;*/
+			break;
 		case prompt:
 			drawPrompt(m_mainMessage, m_secondMessage);
 			{
