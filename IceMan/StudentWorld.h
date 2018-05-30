@@ -30,8 +30,9 @@ public:
 	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	bool all_Oil_Found();
 	void addItem(const ObjType & ID);
+	void annoyHero(const int & x_coord, const int & y_coord, const ObjType & type);
 	void dropItem(const ObjType & ID); ///NOT COMPLETE
-	virtual void cleanUp(); // WHY IS THIS VIRTUAL?
+	virtual void cleanUp(); 
 	static StudentWorld* getInstance();
 	~StudentWorld();
 private:
