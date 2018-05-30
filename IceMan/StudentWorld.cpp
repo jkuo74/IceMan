@@ -57,7 +57,7 @@ int StudentWorld::init() {
 			x_rand += (initTunnelR + 1);
 		int y_rand = (rand() % 56);
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD)) {
-			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, PERMANENT, this));
+			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, ALIVE, this));
 			n++;
 			//cerr << "GOLD (" << x_rand << "," << y_rand << ")" << endl;
 		}
@@ -71,7 +71,7 @@ int StudentWorld::init() {
 			x_rand += (initTunnelR + 1);
 		int y_rand = (rand() % 56);
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD) && !objectNearby(x_rand, y_rand, 6.0, OIL)) {
-			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
+			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, ALIVE, this));
 			n++;
 			//cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
 		}		
@@ -92,13 +92,13 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 						(*it2)->annoy(100);
 					if (ID2 == SQUIRT)//if ID is not five but something is within the radius, return false
 						(*it2)->annoy(2);
+					if (ID2 == GOLD)
+						(*it2)->setState(TEMPORARY);
 					return true;
 				}
 		}
 	}
 	if ((ID1 == 0 || ID1 == 2) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= radius) {
-		if ((ID2 == BOULDER) && Hero->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
-			Hero->annoy(100);
 		return true;
 	}
 	return false;
@@ -116,37 +116,40 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	return false;
 }
 bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { // coord from  rand(), will always be within boundaries for face = none
-	for (int i = 0; i < sizeOfObject; i++) {
-		for (int j = 0; j < sizeOfObject; j++) {
-			switch (face) {
-			case GraphObject::none:
-				if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-					return false;
-				}
-				break;
-			case GraphObject::up:
-				if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-					return false;
-				}
-				break;
-			case GraphObject::down:
-				if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
-					return false;
-				}
-				break;
-			case GraphObject::left:
-				if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
-					return false;
-				}
-				break;
-			case GraphObject::right:
-				if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
-					return false;
-				}
-				break;
-			}
+	//for (int i = 0; i < sizeOfObject; i++) {
+	//	for (int j = 0; j < sizeOfObject; j++) {
+	//		switch (face) {
+	//		case GraphObject::none:
+	//			if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+	//				return false;
+	//			}
+	//			break;
+	//		case GraphObject::up:
+	//			if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+	//				return false;
+	//			}
+	//			break;
+	//		case GraphObject::down:
+	//			if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
+	//				return false;
+	//			}
+	//			break;
+	//		case GraphObject::left:
+	//			if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
+	//				return false;
+	//			}
+	//			break;
+	//		case GraphObject::right:
+	//			if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
+	//				return false;
+	//			}
+	//			break;
+	//		}
 
-		}
+	//	}
+	//}
+	if (IceAround(x_coord, y_coord, face)) {
+		return false;
 	}
 	for (auto it2 = Objects[BOULDER].begin(); it2 != Objects[BOULDER].end(); it2++) {
 		switch (face) {
@@ -181,43 +184,6 @@ bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const Gr
 	}
 	return true;
 }
-//can take any coordinate (even  if it is out of bounds)
-//bool StudentWorld::canMoveTo(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) {
-//	int x = x_coord;
-//	int y = y_coord;
-//	switch (face) {
-//	case GraphObject::up:
-//		if (y < 60 ) {
-//			y ++;
-//		}
-//		else
-//			return false;
-//		break;
-//	case GraphObject::down:
-//		if (y > 0) {
-//			y --;
-//		}
-//		else 
-//			return false;
-//		break;
-//
-//	case GraphObject::left:
-//		if (x > 0) {
-//			x --;
-//		}
-//		else
-//			return false;
-//		break;
-//	case GraphObject::right:
-//		if (x < (60 - sizeOfObject)) {
-//			x++;
-//		}
-//		else
-//			return false;
-//		break;
-//	}
-//	return emptySpace(x, y,GraphObject::none);
-//}
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
@@ -229,6 +195,15 @@ void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 }
 bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) {
 	switch (face) {
+	case GraphObject::none:
+		for (int i = 0; i < sizeOfObject; i++) {
+			for (int j = 0; j < sizeOfObject; j++) {
+				if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+					return true;
+				}
+			}
+		}
+		return false;
 	case GraphObject::down:
 		return y_coord <= 0 || (IceBlocks[x_coord][y_coord - 1] != nullptr ||
 		IceBlocks[x_coord + 1][y_coord - 1] != nullptr ||
@@ -249,8 +224,6 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 1] != nullptr ||
 			IceBlocks[x_coord - 1][y_coord + 2] != nullptr ||
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
-	default:
-		return false;
 	}
 }
 bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
@@ -266,6 +239,13 @@ bool StudentWorld::all_Oil_Found() {
 
 void StudentWorld::addItem(const ObjType & ID) {
 	Hero->addItem(ID);
+}
+void StudentWorld::annoyHero(const int & x_coord, const int & y_coord, const ObjType & type) {
+	if ((type == BOULDER) && Hero->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
+		Hero->annoy(100);
+	if (type == PROTESTER || type == HARDCORE_PROTESTER) {
+		Hero->annoy(2);
+	}
 }
 void StudentWorld::dropItem(const ObjType & ID) {
 	if (ID == GOLD)
