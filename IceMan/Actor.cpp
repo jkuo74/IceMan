@@ -34,7 +34,7 @@ int Person::getHealth() {
 }
 
 IceMan::IceMan(StudentWorld * swp) :
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 0, 1, 5 } {}
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 10, 1, 50 } {} // FIX: ( 0,1,5)
 void IceMan::doSomething() {
 	int ch;
 	getSWP()->removeIce(getX(), getY());
@@ -118,10 +118,26 @@ int IceMan::getNumItems(ObjType obj) {
 }
 Regular_Protester::Regular_Protester(StudentWorld * swp) :
 	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 0, 5, swp), stepsToTake(0), 
-	ticksToWait(max(0,3- static_cast<int>(swp->getLevel()/4))), ticks_elapsed(0) {}
+	ticksToMove(max(0,3- static_cast<int>(swp->getLevel()/4))), ticks_elapsed(0), ticksToAnnoy(15),canAnnoy(true) {}
 void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
-	//if (ticks_elapsed % 4 == 0) {
+	int x = getX();
+	int y = getY();
+	if (getHealth() <= 0) {
+		setState(DEAD); //setState(TEMPORARY);
+		return;
+	}
+	if (ticksToAnnoy == 15 && getSWP()->personNearby(x, y, 4.0, 0, PROTESTER)) {
+		getSWP()->playSound(SOUND_PROTESTER_YELL);
+		ticksToAnnoy--;
+	}
+	else if (ticksToAnnoy == 0) {
+		ticksToAnnoy = 15;
+	}
+	else {
+		ticksToAnnoy--;
+	}
+	if (ticks_elapsed % ticksToMove == 0 && !getSWP()->personNearby(x, y, 4.0, 0, PROTESTER)) {
 		Direction  dir = getDirection();
 		if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
 			stepsToTake = (rand() % 53) + 8;
@@ -151,13 +167,16 @@ void Regular_Protester::doSomething() {
 			}
 			stepsToTake--;
 		}
-	//}
+	}
+	if (getState() == TEMPORARY) {
+		//
+	}
 	ticks_elapsed++;
 }
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp) {}
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp) :
-	Thing(IID_ICE, x_coord, y_coord, PERMANENT, right, 0.25, 3, swp) {}
+	Thing(IID_ICE, x_coord, y_coord, ALIVE, right, 0.25, 3, swp) {}
 Oil_Barrel::Oil_Barrel(const int & x_coord, const int & y_coord, const STATE & st, StudentWorld * swp) :
 	Thing(IID_BARREL, x_coord, y_coord, st, right, 1.0, 2, swp) {
 	setVisibility(false);
@@ -166,7 +185,7 @@ void Oil_Barrel::doSomething() {
 	switch (getState()) {
 	case DEAD:
 		break;
-	case PERMANENT:
+	case ALIVE:
 		if (!isVisible())
 			if (getSWP()->personNearby(getX(), getY(), 4.0, 0, OIL))
 				setVisibility(true);
@@ -212,7 +231,9 @@ void Boulder::doSomething() {
 		}
 		else if (st == FALLING) {
 			moveTo(x_coord, y_coord - 1);
-			getSWP()->personNearby(getX(), getY(), 4.0, 2, BOULDER);
+			if (getSWP()->personNearby(x_coord, y_coord, 4.0, 2, BOULDER)) {
+				getSWP()->annoyHero(x_coord, y_coord, BOULDER);
+			}
 			if (y_coord <= 0 || getSWP()->IceAround(x_coord, y_coord, down) || getSWP()->BoulderBelow(x_coord, y_coord)) {
 				setState(DEAD);
 				setVisibility(false);
@@ -229,7 +250,7 @@ void Gold_Nugget::doSomething() {
 	switch (getState()) {
 	case DEAD:
 		break;
-	case PERMANENT:
+	case ALIVE:
 		if (!isVisible())
 			if (getSWP()->personNearby(getX(), getY(), 4.0, 0, GOLD))
 				setVisibility(true);
@@ -246,6 +267,7 @@ void Gold_Nugget::doSomething() {
 		// FIX
 		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) { // FOR REG/HARDCORE PROTESTERS . DO IN PROTESTER CLASSES?
 			getSWP()->increaseScore(25);
+			setState(DEAD);
 		}
 		incrementTick();
 		if (timeUp())
