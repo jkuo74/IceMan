@@ -118,7 +118,7 @@ int IceMan::getNumItems(ObjType obj) {
 }
 Regular_Protester::Regular_Protester(StudentWorld * swp) :
 	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 0, 5, swp), stepsToTake(0), 
-	ticksToMove(max(0,3- static_cast<int>(swp->getLevel()/4))), ticks_elapsed(0), ticksToAnnoy(15),canAnnoy(true) {}
+	ticksToMove(max(0,3- static_cast<int>(swp->getLevel()/4))), ticks_elapsed(0), ticksToAnnoy(15) {}
 void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
 	int x = getX();
