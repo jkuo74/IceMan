@@ -27,6 +27,7 @@ public:
 	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size = 1.0, const unsigned int & depth = 0, const int & health = 0, StudentWorld * swp = nullptr);
 	virtual void annoy(const int & damage);
 	int getHealth();
+	//void turnLeft 
 	virtual ~Person() {};
 private:
 	int health_points;
@@ -47,6 +48,10 @@ public:
 	Regular_Protester(StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Regular_Protester() {};
+private:
+	int stepsToTake;
+	int ticksToWait;
+	int ticks_elapsed;
 };
 //class Hardcore_Protester : public Regular_Protester
 //{
