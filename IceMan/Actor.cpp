@@ -104,7 +104,7 @@ void IceMan::doSomething() {
 }
 
 void IceMan::addItem(ObjType obj) {
-	if (obj == WATER) {
+	if (obj == WATER || obj == SQUIRT){
 		itemArr[SQUIRT] += 5;
 	}
 	else if (obj < SQUIRT) {
