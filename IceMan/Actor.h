@@ -4,7 +4,7 @@
 #include "GraphObject.h"
 class StudentWorld;
 enum ObjType;
-enum STATE { ALIVE, PERMANENT, TEMPORARY, FALLING, DEAD };
+enum STATE { ALIVE, TEMPORARY, FALLING, DEAD };
 class Actor : public GraphObject {
 public:
 	Actor(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp);
@@ -43,15 +43,17 @@ private:
 	int itemArr[3]; // 0=GOLD, 1=SONAR, 2=SQUIRT
 };
 
-class Regular_Protester : public Person {
+class Regular_Protester : public Person/*, public virtual Temp_Thing*/ {
 public:
 	Regular_Protester(StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Regular_Protester() {};
 private:
 	int stepsToTake;
-	int ticksToWait;
+	int ticksToMove;
 	int ticks_elapsed;
+	int ticksToAnnoy;
+	bool canAnnoy;
 };
 //class Hardcore_Protester : public Regular_Protester
 //{
