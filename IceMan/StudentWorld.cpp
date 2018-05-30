@@ -75,6 +75,7 @@ int StudentWorld::init() {
 			n++;
 			//cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
 		}
+		Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 	}
 	return GWSTATUS_CONTINUE_GAME;
 }
