@@ -19,7 +19,8 @@ public:
 	StudentWorld(std::string assetDir);
 	bool personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2);
 	bool objectNearby(const int & x_coord, const int & y_coord, const double & radius, const ObjType & ID2);
-	bool emptySpace(const int & x_coord, const int & y_coord);
+	bool emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
+	//bool canMoveTo(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
 	virtual int init();
 	virtual int move();
 	void deleteDeadObjects();
