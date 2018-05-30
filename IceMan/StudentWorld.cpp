@@ -74,9 +74,9 @@ int StudentWorld::init() {
 			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, PERMANENT, this));
 			n++;
 			//cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
-		}
-		Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+		}		
 	}
+	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2) {
@@ -115,17 +115,109 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	}
 	return false;
 }
-bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord) {
-	for (int i = 0; i < 4; i++) 
-		for (int j = 0; j < 4; j++)
-			if (IceBlocks[x_coord + i][y_coord + j] != nullptr)
+bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { // coord from  rand(), will always be within boundaries for face = none
+	for (int i = 0; i < sizeOfObject; i++) {
+		for (int j = 0; j < sizeOfObject; j++) {
+			switch (face) {
+			case GraphObject::none:
+				if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+					return false;
+				}
+				break;
+			case GraphObject::up:
+				if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+					return false;
+				}
+				break;
+			case GraphObject::down:
+				if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
+					return false;
+				}
+				break;
+			case GraphObject::left:
+				if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
+					return false;
+				}
+				break;
+			case GraphObject::right:
+				if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
+					return false;
+				}
+				break;
+			}
+
+		}
+	}
+	for (auto it2 = Objects[BOULDER].begin(); it2 != Objects[BOULDER].end(); it2++) {
+		switch (face) {
+		case GraphObject::none:
+			for (auto it = Objects.begin(); it != Objects.end(); it++) {
+				for (auto it2 = it->begin(); it2 != it->end(); it2++) {
+					if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= 4) {
+						return false;
+					}
+				}
+			}
+			break;
+		case GraphObject::up:
+			if (abs((*it2)->getX() - x_coord) < 4 && (y_coord == ((*it2)->getY() - 4)))
 				return false;
-	for (auto it = Objects.begin(); it != Objects.end(); it++)
-		for (auto it2 = it->begin(); it2 != it->end(); it2++)
-			if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= 4)
+			break;
+		case GraphObject::down:
+			if (abs((*it2)->getX() - x_coord) < 4 && y_coord == ((*it2)->getY() + 4))
 				return false;
+			break;
+		case GraphObject::left:
+			if ((abs((*it2)->getX() - x_coord) == 4) &&
+				y_coord < ((*it2)->getY() + 4))
+				return false;
+			break;
+		case GraphObject::right:
+			if ((abs((*it2)->getX() - x_coord) == 4) &&
+				y_coord < ((*it2)->getY() + 4))
+				return false;
+			break;
+		}
+	}
 	return true;
 }
+//can take any coordinate (even  if it is out of bounds)
+//bool StudentWorld::canMoveTo(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) {
+//	int x = x_coord;
+//	int y = y_coord;
+//	switch (face) {
+//	case GraphObject::up:
+//		if (y < 60 ) {
+//			y ++;
+//		}
+//		else
+//			return false;
+//		break;
+//	case GraphObject::down:
+//		if (y > 0) {
+//			y --;
+//		}
+//		else 
+//			return false;
+//		break;
+//
+//	case GraphObject::left:
+//		if (x > 0) {
+//			x --;
+//		}
+//		else
+//			return false;
+//		break;
+//	case GraphObject::right:
+//		if (x < (60 - sizeOfObject)) {
+//			x++;
+//		}
+//		else
+//			return false;
+//		break;
+//	}
+//	return emptySpace(x, y,GraphObject::none);
+//}
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
@@ -157,6 +249,8 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 1] != nullptr ||
 			IceBlocks[x_coord - 1][y_coord + 2] != nullptr ||
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
+	default:
+		return false;
 	}
 }
 bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
@@ -223,7 +317,7 @@ int StudentWorld::move() {
 				do {
 					x = rand() % 60;
 					y = rand() % 60;
-				} while (!emptySpace(x, y));
+				} while (!emptySpace(x, y,GraphObject::none));
 					Objects[WATER].push_back(make_unique<Water_Pool>(x, y, this));
 					cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
@@ -241,7 +335,7 @@ int StudentWorld::move() {
 void StudentWorld::deleteDeadObjects() {
 	for (auto it = Objects.begin(); it != Objects.end(); it++) {
 		auto it2 = it->begin();
-		while ( it2 != it->end()) {
+		while (it2 != it->end()) { 
 			if (!(*it2)->isAlive()) {
 				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
 				(*it2).reset();
