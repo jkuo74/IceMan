@@ -53,7 +53,7 @@ private:
 	int ticksToMove;
 	int ticks_elapsed;
 	int ticksToAnnoy;
-	bool canAnnoy;
+	//bool canAnnoy;
 };
 //class Hardcore_Protester : public Regular_Protester
 //{
