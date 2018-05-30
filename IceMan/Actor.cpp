@@ -11,11 +11,11 @@ Actor::Actor(const int & ID, const int & x_coord, const int & y_coord, const STA
 STATE Actor::getState() {
 	return state;
 }
-void Actor::setVisibility(const bool & v){
-	setVisible(v); 
+void Actor::setVisibility(const bool & v) {
+	setVisible(v);
 	visible = v;
 }
-StudentWorld * Actor::getSWP(){
+StudentWorld * Actor::getSWP() {
 	return SWP;
 }
 bool Actor::isVisible() {
@@ -62,7 +62,7 @@ void IceMan::doSomething() {
 		case KEY_PRESS_UP:
 			if (up != dir)
 				setDirection(up);
-			else if (y_pos != 60 && !getSWP()->objectNearby(x_pos,y_pos + 1, 3.0, BOULDER))
+			else if (y_pos != 60 && !getSWP()->objectNearby(x_pos, y_pos + 1, 3.0, BOULDER))
 				moveTo(getX(), getY() + 1);
 			else
 				moveTo(getX(), getY());
@@ -86,6 +86,7 @@ void IceMan::doSomething() {
 			}
 			break;
 		case KEY_PRESS_TAB:
+			
 			if (itemArr[GOLD] > 0) {
 				getSWP()->dropItem(GOLD);
 				itemArr[GOLD]--;
@@ -102,7 +103,6 @@ void IceMan::doSomething() {
 		}
 	}
 }
-
 void IceMan::addItem(ObjType obj) {
 	if (obj == WATER || obj == SQUIRT){
 		itemArr[SQUIRT] += 5;
@@ -112,21 +112,50 @@ void IceMan::addItem(ObjType obj) {
 	}
 }
 int IceMan::getNumItems(ObjType obj) {
-	if (obj > OIL) 
+	if (obj > OIL)
 		return -1;
 	return itemArr[obj];
 }
-Regular_Protester:: Regular_Protester(StudentWorld * swp) : 
-	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 0, 5, swp) {
-
+Regular_Protester::Regular_Protester(StudentWorld * swp) :
+	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 0, 5, swp), stepsToTake(0), 
+	ticksToWait(max(0,3- static_cast<int>(swp->getLevel()/4))), ticks_elapsed(0) {}
+void Regular_Protester::doSomething() {
+	//	GraphOjbect:  enum Direction { none, up, down, left, right };
+	//if (ticks_elapsed % 4 == 0) {
+		Direction  dir = getDirection();
+		if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
+			stepsToTake = (rand() % 53) + 8;
+			do {
+				dir = static_cast<Direction>(rand() % 4 + 1);
+				//cerr << "REG DO  SOMETHING" << endl;
+			} while (!getSWP()->emptySpace(getX(), getY(), dir));
+		}
+		if (stepsToTake > 0) {
+			switch (dir) {
+			case up:
+				setDirection(up);
+				moveTo(getX(), getY() + 1);
+				break;
+			case down:
+				setDirection(down);
+				moveTo(getX(), getY() - 1);
+				break;
+			case left:
+				setDirection(left);
+				moveTo(getX() - 1, getY());
+				break;
+			case right:
+				setDirection(right);
+				moveTo(getX() + 1, getY());
+				break;
+			}
+			stepsToTake--;
+		}
+	//}
+	ticks_elapsed++;
 }
-void Regular_Protester::doSomething(){
-	int dir = rand() % 4;
-	switch (dir) {
+void setStepsToTake() {}
 
-	}
-	moveTo(getX() - 1, getY());
-}
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp) {}
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp) :
@@ -155,7 +184,7 @@ void Oil_Barrel::doSomething() {
 }
 Temp_Thing::Temp_Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, const int & max_ticks, StudentWorld * swp) :
 	Thing(ID, x_coord, y_coord, st, face, size, depth, swp), ticks_elapsed(0), tick_limit(max_ticks) {}
-int Temp_Thing::getTicksElapsed(){
+int Temp_Thing::getTicksElapsed() {
 	return ticks_elapsed;
 }
 int Temp_Thing::getTicksLimit() {
@@ -186,7 +215,7 @@ void Boulder::doSomething() {
 		else if (st == FALLING) {
 			moveTo(x_coord, y_coord - 1);
 			getSWP()->personNearby(getX(), getY(), 4.0, 2, BOULDER);
-			if (y_coord <= 0 || getSWP()->IceAround(x_coord, y_coord, down) || getSWP()->BoulderBelow(x_coord, y_coord)) {
+			if (y_coord <= 0 || getSWP()->IceAround(x_coord, y_coord, down) || getSWP()->objectBelow(x_coord, y_coord,BOULDER)) {
 				setState(DEAD);
 				setVisibility(false);
 			}
@@ -223,22 +252,22 @@ void Gold_Nugget::doSomething() {
 		incrementTick();
 		if (timeUp())
 			setState(DEAD);
-			break;
+		break;
 	}
 }
-Sonar_Kit::Sonar_Kit(StudentWorld * swp):
+Sonar_Kit::Sonar_Kit(StudentWorld * swp) :
 	Temp_Thing(IID_SONAR, 0, 60, TEMPORARY, right, 1.0, 2, max(100, 300 - 10 * static_cast<int>(swp->getLevel())), swp) {}
-void Sonar_Kit::doSomething(){
+void Sonar_Kit::doSomething() {
 	if (getState() == TEMPORARY) {
 		incrementTick();
-	if (getSWP()->personNearby(getX(), getY(), 3.0, 0, SONAR)) {
-		setState(DEAD);
-		getSWP()->playSound(SOUND_GOT_GOODIE);
-		getSWP()->increaseScore(75);
-		getSWP()->addItem(SONAR);
-	}
-	if (timeUp())
-		setState(DEAD);
+		if (getSWP()->personNearby(getX(), getY(), 3.0, 0, SONAR)) {
+			setState(DEAD);
+			getSWP()->playSound(SOUND_GOT_GOODIE);
+			getSWP()->increaseScore(75);
+			getSWP()->addItem(SONAR);
+		}
+		if (timeUp())
+			setState(DEAD);
 	}
 }
 Water_Pool::Water_Pool(const int & x_coord, const int & y_coord, StudentWorld * swp) :
@@ -257,7 +286,7 @@ void Water_Pool::doSomething() {
 			setState(DEAD);
 	}
 }
-Squirt::Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp):
+Squirt::Squirt(const int & x_coord, const int & y_coord, const GraphObject::Direction & face, StudentWorld * swp) :
 	Temp_Thing(IID_WATER_SPURT, x_coord, y_coord, TEMPORARY, face, 1.0, 1, 4, swp) {}
 void Squirt::doSomething() {
 	int x_pos = getX();
