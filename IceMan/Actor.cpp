@@ -34,7 +34,7 @@ int Person::getHealth() {
 }
 
 IceMan::IceMan(StudentWorld * swp) :
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, swp), itemArr{ 0,1,50 } {}
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 0, 1, 5 } {}
 void IceMan::doSomething() {
 	int ch;
 	getSWP()->removeIce(getX(), getY());
