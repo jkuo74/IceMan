@@ -35,6 +35,7 @@ int Person::getHealth() {
 
 IceMan::IceMan(StudentWorld * swp) :
 	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 10, 1, 50 } {} // FIX: ( 0,1,5)
+;
 void IceMan::doSomething() {
 	int ch;
 	getSWP()->removeIce(getX(), getY());
@@ -44,36 +45,20 @@ void IceMan::doSomething() {
 		Direction dir = getDirection();
 		switch (ch) {
 		case KEY_PRESS_LEFT:
-			if (left != dir)
-				setDirection(left);
-			else if (x_pos != 0 && !getSWP()->objectNearby(x_pos - 1, y_pos, 3.0, BOULDER))
-				moveTo(getX() - 1, getY());
-			else
-				moveTo(getX(), getY());
+			dir = left;
+			x_pos--;
 			break;
 		case KEY_PRESS_RIGHT:
-			if (right != dir)
-				setDirection(right);
-			else if (x_pos != 60 && !getSWP()->objectNearby(x_pos + 1, y_pos, 3.0, BOULDER))
-				moveTo(getX() + 1, getY());
-			else
-				moveTo(getX(), getY());
+			dir = right;
+			x_pos++;
 			break;
 		case KEY_PRESS_UP:
-			if (up != dir)
-				setDirection(up);
-			else if (y_pos != 60 && !getSWP()->objectNearby(x_pos,y_pos + 1, 3.0, BOULDER))
-				moveTo(getX(), getY() + 1);
-			else
-				moveTo(getX(), getY());
+			dir = up;
+			y_pos++;
 			break;
 		case KEY_PRESS_DOWN:
-			if (down != dir)
-				setDirection(down);
-			else if (y_pos != 0 && !getSWP()->objectNearby(x_pos, y_pos - 1, 3.0, BOULDER))
-				moveTo(getX(), getY() - 1);
-			else
-				moveTo(getX(), getY());
+			dir = down;
+			y_pos--;
 			break;
 		case KEY_PRESS_ESCAPE:
 			annoy(10);
@@ -100,8 +85,11 @@ void IceMan::doSomething() {
 				getSWP()->objectNearby(x_pos, y_pos, 60.0, OIL);
 			}
 		}
+		if (!getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
+			moveInDirection(dir);
+		}
 	}
-}
+}		
 
 void IceMan::addItem(ObjType obj) {
 	if (obj == WATER || obj == SQUIRT){
