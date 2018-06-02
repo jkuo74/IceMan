@@ -74,7 +74,7 @@ int StudentWorld::init() {
 			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, ALIVE, this));
 			n++;
 			//cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
-		}		
+		}
 	}
 	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 	return GWSTATUS_CONTINUE_GAME;
@@ -116,38 +116,38 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	return false;
 }
 bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { // coord from  rand(), will always be within boundaries for face = none
-	//for (int i = 0; i < sizeOfObject; i++) {
-	//	for (int j = 0; j < sizeOfObject; j++) {
-	//		switch (face) {
-	//		case GraphObject::none:
-	//			if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-	//				return false;
-	//			}
-	//			break;
-	//		case GraphObject::up:
-	//			if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-	//				return false;
-	//			}
-	//			break;
-	//		case GraphObject::down:
-	//			if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
-	//				return false;
-	//			}
-	//			break;
-	//		case GraphObject::left:
-	//			if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
-	//				return false;
-	//			}
-	//			break;
-	//		case GraphObject::right:
-	//			if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
-	//				return false;
-	//			}
-	//			break;
-	//		}
+																											   //for (int i = 0; i < sizeOfObject; i++) {
+																											   //	for (int j = 0; j < sizeOfObject; j++) {
+																											   //		switch (face) {
+																											   //		case GraphObject::none:
+																											   //			if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+																											   //				return false;
+																											   //			}
+																											   //			break;
+																											   //		case GraphObject::up:
+																											   //			if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
+																											   //				return false;
+																											   //			}
+																											   //			break;
+																											   //		case GraphObject::down:
+																											   //			if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
+																											   //				return false;
+																											   //			}
+																											   //			break;
+																											   //		case GraphObject::left:
+																											   //			if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
+																											   //				return false;
+																											   //			}
+																											   //			break;
+																											   //		case GraphObject::right:
+																											   //			if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
+																											   //				return false;
+																											   //			}
+																											   //			break;
+																											   //		}
 
-	//	}
-	//}
+																											   //	}
+																											   //}
 	if (IceAround(x_coord, y_coord, face)) {
 		return false;
 	}
@@ -193,7 +193,7 @@ void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 				IceBlocks[n][m] = nullptr;
 			}
 }
-bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) {
+bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { //not all paths reutrn a value
 	switch (face) {
 	case GraphObject::none:
 		for (int i = 0; i < sizeOfObject; i++) {
@@ -206,9 +206,9 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 		return false;
 	case GraphObject::down:
 		return y_coord <= 0 || (IceBlocks[x_coord][y_coord - 1] != nullptr ||
-		IceBlocks[x_coord + 1][y_coord - 1] != nullptr ||
-		IceBlocks[x_coord + 2][y_coord - 1] != nullptr ||
-		IceBlocks[x_coord + 3][y_coord - 1] != nullptr);
+			IceBlocks[x_coord + 1][y_coord - 1] != nullptr ||
+			IceBlocks[x_coord + 2][y_coord - 1] != nullptr ||
+			IceBlocks[x_coord + 3][y_coord - 1] != nullptr);
 	case GraphObject::up:
 		return y_coord >= 60 || (IceBlocks[x_coord][y_coord + 4] != nullptr ||
 			IceBlocks[x_coord + 1][y_coord + 4] != nullptr ||
@@ -269,7 +269,7 @@ void StudentWorld::dropItem(const ObjType & ID) {
 			x_pos += 3;
 			break;
 		}
-		if(!IceAround(x_pos, y_pos, face) && !objectNearby(x_pos, y_pos, 3.0, BOULDER))
+		if (!IceAround(x_pos, y_pos, face) && !objectNearby(x_pos, y_pos, 3.0, BOULDER))
 			Objects[SQUIRT].push_back(std::make_unique<Squirt>(x_pos, y_pos, face, this));
 	}
 }
@@ -297,10 +297,21 @@ int StudentWorld::move() {
 				do {
 					x = rand() % 60;
 					y = rand() % 60;
-				} while (!emptySpace(x, y,GraphObject::none));
-					Objects[WATER].push_back(make_unique<Water_Pool>(x, y, this));
-					cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
+				} while (!emptySpace(x, y, GraphObject::none));
+				Objects[WATER].push_back(make_unique<Water_Pool>(x, y, this));
+				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
+		}
+		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
+			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0 ) {
+			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
+			//int regOrHardcore = rand() % 100;
+			//if (regOrHardcore < 30) {
+			//	Objects[HARDCORE_PROTESTER].push_back(make_unique<Regular_Protester>(this));
+			//}
+			//else {
+				Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+			//}
 		}
 		game_ticks++;
 		updateDisplayText();
@@ -315,7 +326,7 @@ int StudentWorld::move() {
 void StudentWorld::deleteDeadObjects() {
 	for (auto it = Objects.begin(); it != Objects.end(); it++) {
 		auto it2 = it->begin();
-		while (it2 != it->end()) { 
+		while (it2 != it->end()) {
 			if (!(*it2)->isAlive()) {
 				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
 				(*it2).reset();
@@ -354,6 +365,12 @@ void StudentWorld::deleteDeadObjects() {
 //		it->shrink_to_fit();
 //	}
 //}
+int StudentWorld::getHeroX() {
+	return Hero->getX();
+}
+int StudentWorld::getHeroY() {
+	return Hero->getY();
+}
 void StudentWorld::updateDisplayText() {
 	stringstream os;
 	os << "Lvl: " << setw(2) << getLevel() << " Lives: " << getLives()
