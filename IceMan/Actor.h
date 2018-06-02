@@ -16,7 +16,7 @@ public:
 	void setState(const STATE & st) { state = st; };
 	void setVisibility(const bool & v);
 	StudentWorld * getSWP();
-	virtual ~Actor() { SWP = nullptr;};
+	virtual ~Actor() { SWP = nullptr; };
 private:
 	StudentWorld * SWP;
 	STATE state;
@@ -52,7 +52,7 @@ private:
 	int stepsToTake;
 	int ticksToMove;
 	int ticks_elapsed;
-	int ticksToAnnoy;
+	int ticksLeftToAnnoy;
 	//bool canAnnoy;
 };
 //class Hardcore_Protester : public Regular_Protester
