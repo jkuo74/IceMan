@@ -32,7 +32,9 @@ public:
 	void addItem(const ObjType & ID);
 	void annoyHero(const int & x_coord, const int & y_coord, const ObjType & type);
 	void dropItem(const ObjType & ID); ///NOT COMPLETE
-	virtual void cleanUp(); 
+	int getHeroX();
+	int getHeroY();
+	virtual void cleanUp();
 	static StudentWorld* getInstance();
 	~StudentWorld();
 private:
