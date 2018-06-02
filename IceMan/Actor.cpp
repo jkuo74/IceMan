@@ -123,49 +123,75 @@ void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
 	int x = getX();
 	int y = getY();
+	bool heroNear = getSWP()->personNearby(x, y, 4.0, 0, PROTESTER);
 	if (getHealth() <= 0) {
 		setState(DEAD); //setState(TEMPORARY);
 		return;
 	}
-	if (ticksToAnnoy == 15 && getSWP()->personNearby(x, y, 4.0, 0, PROTESTER)) {
-		getSWP()->playSound(SOUND_PROTESTER_YELL);
-		ticksToAnnoy--;
-	}
-	else if (ticksToAnnoy == 0) {
-		ticksToAnnoy = 15;
-	}
-	else {
-		ticksToAnnoy--;
-	}
-	if (ticks_elapsed % ticksToMove == 0 && !getSWP()->personNearby(x, y, 4.0, 0, PROTESTER)) {
-		Direction  dir = getDirection();
-		if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
-			stepsToTake = (rand() % 53) + 8;
-			do {
-				dir = static_cast<Direction>(rand() % 4 + 1);
-				//cerr << "REG DO  SOMETHING" << endl;
-			} while (!getSWP()->emptySpace(getX(), getY(), dir));
-		}
-		if (stepsToTake > 0) {
-			switch (dir) {
-			case up:
-				setDirection(up);
-				moveTo(getX(), getY() + 1);
-				break;
-			case down:
-				setDirection(down);
-				moveTo(getX(), getY() - 1);
-				break;
-			case left:
+	if (heroNear) {
+		int x_dist = getSWP()->getHeroX() - getX();
+		int y_dist = getSWP()->getHeroY() - getY();
+		//int smallestDiff = min(abs(x_dist), abs(y_dist));
+		if (abs(x_dist) <= abs(y_dist) || getY() == 60 ||  getY() == 0) {  // only done when heroNear?
+			if (x_dist < 0) {
 				setDirection(left);
-				moveTo(getX() - 1, getY());
-				break;
-			case right:
-				setDirection(right);
-				moveTo(getX() + 1, getY());
-				break;
 			}
-			stepsToTake--;
+			else {
+				setDirection(right);
+			}
+		}
+		else if(getX() == 60 || getX() == 0) {
+			if (y_dist < 0) {
+				setDirection(down);
+			}
+			else {
+				setDirection(up);
+			}
+		}
+	}
+
+	if (ticks_elapsed % ticksToMove == 0) {
+		if (ticksLeftToAnnoy == 15 && heroNear) {
+			getSWP()->playSound(SOUND_PROTESTER_YELL);
+			getSWP()->annoyHero(x, y, PROTESTER);
+			ticksLeftToAnnoy--;
+		}
+		else if (ticksLeftToAnnoy == 0) {
+			ticksLeftToAnnoy = 15;
+		}
+		else {
+			ticksLeftToAnnoy--;
+		}
+		if (!heroNear) {
+			Direction  dir = getDirection();
+			if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
+				stepsToTake = (rand() % 53) + 8;
+				do {
+					dir = static_cast<Direction>(rand() % 4 + 1);
+					//cerr << "REG DO  SOMETHING" << endl;
+				} while (!getSWP()->emptySpace(getX(), getY(), dir));
+			}
+			if (stepsToTake > 0) {
+				switch (dir) {
+				case up:
+					setDirection(up);
+					moveTo(getX(), getY() + 1);
+					break;
+				case down:
+					setDirection(down);
+					moveTo(getX(), getY() - 1);
+					break;
+				case left:
+					setDirection(left);
+					moveTo(getX() - 1, getY());
+					break;
+				case right:
+					setDirection(right);
+					moveTo(getX() + 1, getY());
+					break;
+				}
+				stepsToTake--;
+			}
 		}
 	}
 	if (getState() == TEMPORARY) {
