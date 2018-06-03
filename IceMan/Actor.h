@@ -43,7 +43,7 @@ private:
 	int itemArr[3]; // 0=GOLD, 1=SONAR, 2=SQUIRT
 };
 
-class Regular_Protester : public Person/*, public virtual Temp_Thing*/ {
+class Regular_Protester : public Person {
 public:
 	Regular_Protester(StudentWorld * swp);
 	virtual void doSomething();
@@ -53,7 +53,7 @@ private:
 	int ticksToMove;
 	int ticks_elapsed;
 	int ticksLeftToAnnoy;
-	//bool canAnnoy;
+	int ticksToTurn;
 };
 //class Hardcore_Protester : public Regular_Protester
 //{
