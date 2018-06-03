@@ -7,7 +7,7 @@ StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
 const static int initTunnelR = 33;
 const static int sizeOfObject = 4;
-
+const static int maxelement = 63;
 StudentWorld::StudentWorld(string assetDir) :
 	GameWorld(assetDir), game_ticks(0) {
 	SWP = this;
@@ -20,14 +20,20 @@ StudentWorld * StudentWorld::getInstance() {
 }
 int StudentWorld::init() {
 	Hero = std::make_shared<IceMan>(this);//add player
-	for (int n = 0; n < 64; n++) {
+	for (int column = 0; column < 64; column++) {
 		std::vector<Ice*> columns;
-		for (int m = 0; m < 64; m++)
-			if (((n < initTunnelL || n > initTunnelR) || (m < 4)) && m < 60)
-				columns.push_back(new Ice{ n,m });
-			else
+		std::vector<int> columnsInt;
+		for (int row = 0; row < 64; row++)
+			if (((column < initTunnelL || column > initTunnelR) || (row < 4)) && row < 60) {
+				columns.push_back(new Ice{ column,row });
+				columnsInt.push_back(-2);
+			}
+			else {
 				columns.push_back(nullptr);
-		IceBlocks.push_back(columns);
+				columnsInt.push_back(-1);
+			}
+		IceBlocks.push_back(std::move(columns));
+		intSteps.push_back(std::move(columnsInt));
 	}
 	for (int n = 0; n < 8; n++) {
 		vector<unique_ptr<Actor>> temp_object;
@@ -88,10 +94,18 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 		for (auto it = Objects.begin() + PROTESTER; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)//iterate through all elements in sub-vector-level
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= radius) { // distance is less than 6.0 or 3.0
-					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
+					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord) {//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 						(*it2)->annoy(100);
-					if (ID2 == SQUIRT)//if ID is not five but something is within the radius, return false
+						increaseScore(500);	
+						playSound(SOUND_PROTESTER_ANNOYED);
+
+					}
+					if (ID2 == SQUIRT) {//if ID is not five but something is within the radius, return false
 						(*it2)->annoy(2);
+						(*it2)->setState(FALLING);
+						playSound(SOUND_PROTESTER_ANNOYED);
+						increaseScore(100);
+					}
 					if (ID2 == GOLD)
 						(*it2)->setState(TEMPORARY);
 					return true;
@@ -107,7 +121,7 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	//Pass in the object's id to check if any are nearby the given coordinates
 	for (auto it = Objects[ID2].begin(); it != Objects[ID2].end(); it++)
 	{
-		if (sqrt(pow((*it)->getX() - x_coord, 2.0) + pow((*it)->getY() - y_coord, 2.0)) <= radius)
+		if (sqrt(pow((*it)->getX() - x_coord, 2.0) + pow((*it)->getY() - y_coord, 2.0)) < radius)
 			if (radius != 6.0 && ID2 != BOULDER)
 				(*it)->setVisibility(true);
 			else
@@ -146,13 +160,6 @@ bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const Gr
 		return false;
 	}
 	return true;
-}
-bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
-	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
-		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
-			return true;
-	}
-	return false;
 }
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
@@ -196,6 +203,13 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
 	}
 }
+bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
+	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
+		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
+			return true;
+	}
+	return false;
+}
 bool StudentWorld::all_Oil_Found() {
 	return Objects[OIL].size() == 0;
 }
@@ -236,14 +250,14 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 			end = y_coord;
 			flag = 4;
 		}
-		for (start; start!=end; start++) {
+		for (start; start != end; start++) {
 			if (!emptySpace(HeroX, start, GraphObject::none)) {
 				cerr << "NOT EMPTY COLUMN" << endl;
 				return false;
 			}
 		}
 	}
-	else if(HeroY != y_coord && HeroX != x_coord) {
+	else if (HeroY != y_coord && HeroX != x_coord) {
 		return false;
 	}
 	return true;
@@ -252,7 +266,7 @@ void StudentWorld::addItem(const ObjType & ID) {
 	Hero->addItem(ID);
 }
 void StudentWorld::annoyHero(const int & x_coord, const int & y_coord, const ObjType & type) {
-	if ((type == BOULDER) && Hero->getY() < y_coord)//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
+	if ((type == BOULDER) && Hero->getY() < y_coord && (abs(x_coord-Hero->getX()) < 4.0))//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 		Hero->annoy(100);
 	if (type == PROTESTER || type == HARDCORE_PROTESTER) {
 		Hero->annoy(2);
@@ -290,6 +304,9 @@ int StudentWorld::move() {
 		return GWSTATUS_FINISHED_LEVEL;
 	}
 	if (Hero->getHealth() > 0) {
+		if (game_ticks % 50 == 0){
+			//path(60, 60, GraphObject::none, 0);
+		}
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
 				(*it2)->doSomething();
@@ -314,14 +331,14 @@ int StudentWorld::move() {
 			}
 		}
 		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
-			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0 ) {
+			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0) {
 			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
 			//int regOrHardcore = rand() % 100;
 			//if (regOrHardcore < 30) {
 			//	Objects[HARDCORE_PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 			//else {
-				Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 		}
 		game_ticks++;
@@ -352,30 +369,6 @@ void StudentWorld::deleteDeadObjects() {
 		it->shrink_to_fit();
 	}
 }
-
-
-//for (auto it = Objects.begin(); it != Objects.end(); it++) {
-//	vector<int> toDelete;
-//	int index = 0;
-//	for (auto it2 = it->begin(); it2 != it->end(); it2++) {
-//		if (!(*it2)->isAlive()) {
-//			//cerr << it->size() << "|unchanged|" << it->capacity() << endl;
-//			(*it2).reset();
-//			//cerr << it->size() << "|reseted|" << it->capacity() << endl;
-//			toDelete.push_back(index);
-//		}
-//		index++;
-//	}
-//	if (toDelete.size() != 0) {
-//		for (auto it2 = toDelete.begin(); it2 != toDelete.end(); it2++)
-//		{
-//			//cerr << it->size() << "|unchanged2|" << it->capacity() << endl;
-//			it->erase((it->begin() + *it2));
-//			//cerr << it->size() << "|shrunk|" << it->capacity() << endl;
-//		}
-//		it->shrink_to_fit();
-//	}
-//}
 int StudentWorld::getHeroX() {
 	return Hero->getX();
 }
@@ -412,7 +405,103 @@ void StudentWorld::cleanUp() {
 		cerr << line.size() << "||||" << line.capacity() << endl;
 	}
 	Objects.clear();
+	path(60, 60, GraphObject::none, 0);
+	for (int column = 0; column < maxelement + 1; column++)
+	{
+		for (int row = 0; row <maxelement + 1; row++)
+		{
+			cout << setw(3) << intSteps[63 - row][63 - column];
+		}
+		cout << endl;
+	}
+	intSteps.clear();
+
 }
 StudentWorld::~StudentWorld() {
 	cleanUp();
+}
+
+
+void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction dir) {
+	if (id == ICEMAN)
+	{
+		switch (dir)
+		{
+		case GraphObject::none:
+			break;
+		case GraphObject::up:
+			if (y <= 60){
+				if (intSteps[x][y + 3] == -2)
+					intSteps[x][y + 3] = -1;
+				if (intSteps[x - 1][y + 3] == -2)
+					intSteps[x - 1][y + 3] = -1;
+				if (intSteps[x - 2][y + 3] == -2)
+					intSteps[x - 2][y + 3] = -1;
+				if (intSteps[x - 3][y + 3] == -2)
+					intSteps[x - 3][y + 3] = -1;
+			}
+			break;
+		case GraphObject::down:
+			if (y >= 0) {
+				if (intSteps[x][y] == -2)
+					intSteps[x][y] = -1;
+				if (intSteps[x - 1][y] == -2)
+					intSteps[x - 1][y] = -1;
+				if (intSteps[x - 2][y] == -2)
+					intSteps[x - 2][y] = -1;
+				if (intSteps[x - 3][y] == -2)
+					intSteps[x - 3][y] = -1;
+			}
+			break;
+		case GraphObject::left:
+			if (x >= 0) {
+				if (intSteps[x][y] == -2)
+					intSteps[x][y] = -1;
+				if (intSteps[x][y + 1] == -2)
+					intSteps[x][y + 1] = -1;
+				if (intSteps[x][y + 2] == -2)
+					intSteps[x][y + 2] = -1;
+				if (intSteps[x][y + 3] == -2)
+					intSteps[x][y + 3] = -1;
+			}
+			break;
+		case GraphObject::right:
+			if (x <= 61) {
+				if (intSteps[x - 3][y] == -2)
+					intSteps[x - 3][y] = -1;
+				if (intSteps[x - 3][y + 1] == -2)
+					intSteps[x - 3][y + 1] = -1;
+				if (intSteps[x - 3][y + 2] == -2)
+					intSteps[x - 3][y + 2] = -1;
+				if (intSteps[x - 3][y + 3] == -2)
+					intSteps[x - 3][y + 3] = -1;
+				break;
+			}
+		default:
+			break;
+		}
+		
+	}
+	else if (id == BOULDER) {
+		for (int column = x; column > x - 4; column--) {
+			for (int row = y; row < y + 4; row++) {
+				intSteps[column][row] = -1;
+			}
+		}
+	}
+}
+void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step)
+{
+	if (intSteps[maxelement - x][y] == -1 || step < intSteps[maxelement - x][y])
+		intSteps[maxelement - x][y] = step;
+	else
+		return;
+	if (x > 0 && dir != GraphObject::left)
+		path(x - 1, y, GraphObject::right, step + 1);
+	if (x < intSteps.size() - 1 && dir != GraphObject::right)
+		path(x + 1, y, GraphObject::left, step + 1);
+	if (y > 0 && dir != GraphObject::down)
+		path(x, y - 1, GraphObject::up, step + 1);
+	if (y < intSteps[x].size() - 1 && dir != GraphObject::up)
+		path(x, y + 1, GraphObject::down, step + 1);
 }
