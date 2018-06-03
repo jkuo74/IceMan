@@ -20,6 +20,7 @@ public:
 	bool personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2);
 	bool objectNearby(const int & x_coord, const int & y_coord, const double & radius, const ObjType & ID2);
 	bool emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
+	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	//bool canMoveTo(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
 	virtual int init();
 	virtual int move();
@@ -27,8 +28,8 @@ public:
 	void updateDisplayText();
 	void removeIce(const int & x_coord, const int & y_coord);
 	bool IceAround(const int & x_coord, const int & y_coord, const GraphObject::Direction & face);
-	bool BoulderBelow(const int & x_coord, const int & y_coord);
 	bool all_Oil_Found();
+	bool clearPath(const int & x_coord, const int & y_coord, int & flag);
 	void addItem(const ObjType & ID);
 	void annoyHero(const int & x_coord, const int & y_coord, const ObjType & type);
 	void dropItem(const ObjType & ID); ///NOT COMPLETE
