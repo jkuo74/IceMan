@@ -83,6 +83,7 @@ void IceMan::doSomething() {
 	if (getSWP()->getKey(ch)) {
 		int x_pos = getX();
 		int y_pos = getY();
+		Direction initDir = getDirection();
 		Direction dir = none;
 		switch (ch) {
 		case KEY_PRESS_LEFT:
@@ -126,8 +127,11 @@ void IceMan::doSomething() {
 				getSWP()->objectNearby(x_pos, y_pos, 60.0, OIL);
 			}
 		}
-		if (dir != none && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
+		if (initDir == dir && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
 			moveInDirection(dir);
+		}
+		else if (dir != none){
+			setDirection(dir);
 		}
 	}
 }
