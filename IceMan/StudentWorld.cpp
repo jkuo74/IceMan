@@ -115,74 +115,44 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	}
 	return false;
 }
-bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { // coord from  rand(), will always be within boundaries for face = none
-																											   //for (int i = 0; i < sizeOfObject; i++) {
-																											   //	for (int j = 0; j < sizeOfObject; j++) {
-																											   //		switch (face) {
-																											   //		case GraphObject::none:
-																											   //			if (IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-																											   //				return false;
-																											   //			}
-																											   //			break;
-																											   //		case GraphObject::up:
-																											   //			if (y_coord == 60 || IceBlocks[x_coord + i][y_coord + j] != nullptr) {
-																											   //				return false;
-																											   //			}
-																											   //			break;
-																											   //		case GraphObject::down:
-																											   //			if (y_coord == 0 || IceBlocks[x_coord + i][y_coord - 1] != nullptr) {
-																											   //				return false;
-																											   //			}
-																											   //			break;
-																											   //		case GraphObject::left:
-																											   //			if (x_coord == 0 || IceBlocks[x_coord - 1][y_coord + 1] != nullptr) {
-																											   //				return false;
-																											   //			}
-																											   //			break;
-																											   //		case GraphObject::right:
-																											   //			if (x_coord == 60 || IceBlocks[x_coord + j][y_coord + i] != nullptr) {
-																											   //				return false;
-																											   //			}
-																											   //			break;
-																											   //		}
-
-																											   //	}
-																											   //}
-	if (IceAround(x_coord, y_coord, face)) {
-		return false;
-	}
-	for (auto it2 = Objects[BOULDER].begin(); it2 != Objects[BOULDER].end(); it2++) {
-		switch (face) {
-		case GraphObject::none:
-			for (auto it = Objects.begin(); it != Objects.end(); it++) {
-				for (auto it2 = it->begin(); it2 != it->end(); it2++) {
-					if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= 4) {
-						return false;
-					}
-				}
+bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { //coord from  rand(), will always be within boundaries for face = none
+if (IceAround(x_coord, y_coord, face)) {
+	return false;
+}
+int y = y_coord;
+int x = x_coord;
+switch (face) {
+	case GraphObject::none:
+		for (int obj = GOLD; obj < PROTESTER; obj++) {
+			if (objectNearby(x_coord, y_coord, sizeOfObject, static_cast<ObjType>(obj))) {
+				return false;
 			}
-			break;
-		case GraphObject::up:
-			if (abs((*it2)->getX() - x_coord) < 4 && (y_coord == ((*it2)->getY() - 4)))
-				return false;
-			break;
-		case GraphObject::down:
-			if (abs((*it2)->getX() - x_coord) < 4 && y_coord == ((*it2)->getY() + 4))
-				return false;
-			break;
-		case GraphObject::left:
-			if ((abs((*it2)->getX() - x_coord) == 4) &&
-				y_coord < ((*it2)->getY() + 4))
-				return false;
-			break;
-		case GraphObject::right:
-			if ((abs((*it2)->getX() - x_coord) == 4) &&
-				y_coord < ((*it2)->getY() + 4))
-				return false;
-			break;
-		}
 	}
-	return true;
+	break;
+	case GraphObject::up:
+		y++;
+		break;
+	case GraphObject::down:
+		y--;
+		break;
+	case GraphObject::left:
+		x--;
+		break;
+	case GraphObject::right:
+		x++;
+		break;
+}
+if (objectNearby(x, y, sizeOfObject, BOULDER)) {
+	return false;
+}
+return true;
+}
+bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
+	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
+		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
+			return true;
+	}
+	return false;
 }
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
@@ -226,17 +196,58 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
 	}
 }
-bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
-	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
-		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
-			return true;
-	}
-	return false;
-}
 bool StudentWorld::all_Oil_Found() {
 	return Objects[OIL].size() == 0;
 }
-
+bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & flag) {
+	int HeroX = Hero->getX();
+	int HeroY = Hero->getY();
+	int start{};
+	int end{};
+	if (HeroY == y_coord && HeroX == x_coord) {
+		flag = 0;
+	}
+	else if (HeroY == y_coord) {//FFIX : check if equal & make sure ice man  is fully visible
+		if (x_coord < HeroX) { // hero to the right of x
+			start = x_coord;
+			end = HeroX;
+			flag = 1;
+		}
+		else {
+			start = HeroX; // hero to the left of x
+			end = x_coord;
+			flag = 2;
+		}
+		for (start; start != end; start++) {
+			if (!emptySpace(start, HeroY, GraphObject::none)) {
+				cerr << "NOT EMPTY ROW" << endl;
+				return false;
+			}
+		}
+	}
+	else if (HeroX == x_coord) {//FFIX : check if equal & make sure ice man  is fully visible
+		if (y_coord < HeroY) {  // hero above y
+			start = y_coord;
+			end = HeroY;
+			flag = 3;
+		}
+		else {
+			start = HeroY;	// hero below y
+			end = y_coord;
+			flag = 4;
+		}
+		for (start;start!=end;start++) {
+			if (!emptySpace(HeroX, start, GraphObject::none)) {
+				cerr << "NOT EMPTY COLUMN" << endl;
+				return false;
+			}
+		}
+	}
+	else if(HeroY != y_coord && HeroX != x_coord) {
+		return false;
+	}
+	return true;
+}
 void StudentWorld::addItem(const ObjType & ID) {
 	Hero->addItem(ID);
 }
