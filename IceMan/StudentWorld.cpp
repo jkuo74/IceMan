@@ -313,7 +313,7 @@ int StudentWorld::move() {
 				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
 		}
-		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < 1//min(15, 2 + static_cast<int>(getLevel()*1.5))
+		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
 			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0) {
 			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
 			//int regOrHardcore = rand() % 100;
