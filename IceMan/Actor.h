@@ -27,7 +27,7 @@ public:
 	Person(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size = 1.0, const unsigned int & depth = 0, const int & health = 0, StudentWorld * swp = nullptr);
 	virtual void annoy(const int & damage);
 	int getHealth();
-	//void turnLeft 
+	void moveInDirection(const GraphObject::Direction & dir);
 	virtual ~Person() {};
 private:
 	int health_points;
