@@ -129,6 +129,7 @@ void IceMan::doSomething() {
 		}
 		if (initDir == dir && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
 			moveInDirection(dir);
+			getSWP()->updateMap(63-getX(), getY(), ICEMAN, dir);
 		}
 		else if (dir != none) {
 			setDirection(dir);
@@ -311,8 +312,10 @@ void Boulder::doSomething() {
 	int y_coord = getY();
 	STATE st = getState();
 	if (st != DEAD) {
-		if (st == ALIVE && !getSWP()->IceAround(x_coord, y_coord, down))
+		if (st == ALIVE && !getSWP()->IceAround(x_coord, y_coord, down)) {
 			setState(TEMPORARY);
+			getSWP()->updateMap(63 - x_coord, y_coord, BOULDER, down);
+		}
 		else if (st == TEMPORARY) {
 			incrementTick();
 			if (timeUp()) {
