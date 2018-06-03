@@ -147,6 +147,13 @@ bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const Gr
 	}
 	return true;
 }
+bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
+	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
+		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
+			return true;
+	}
+	return false;
+}
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
@@ -189,13 +196,6 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
 	}
 }
-bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
-	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
-		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
-			return true;
-	}
-	return false;
-}
 bool StudentWorld::all_Oil_Found() {
 	return Objects[OIL].size() == 0;
 }
@@ -236,14 +236,14 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 			end = y_coord;
 			flag = 4;
 		}
-		for (start; start != end; start++) {
+		for (start; start!=end; start++) {
 			if (!emptySpace(HeroX, start, GraphObject::none)) {
 				cerr << "NOT EMPTY COLUMN" << endl;
 				return false;
 			}
 		}
 	}
-	else if (HeroY != y_coord && HeroX != x_coord) {
+	else if(HeroY != y_coord && HeroX != x_coord) {
 		return false;
 	}
 	return true;
@@ -314,14 +314,14 @@ int StudentWorld::move() {
 			}
 		}
 		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
-			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0) {
+			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0 ) {
 			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
 			//int regOrHardcore = rand() % 100;
 			//if (regOrHardcore < 30) {
 			//	Objects[HARDCORE_PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 			//else {
-			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+				Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 		}
 		game_ticks++;
