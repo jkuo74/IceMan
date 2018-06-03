@@ -38,12 +38,20 @@ public:
 	virtual void cleanUp();
 	static StudentWorld* getInstance();
 	~StudentWorld();
+
+	void updateMap(int x, int y, ObjType id, GraphObject::Direction dir);
+	void path(int x, int y, GraphObject::Direction dir, int step);
+
 private:
 	int game_ticks;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
 	std::vector<std::vector<std::unique_ptr<Actor>>> Objects;
+	std::vector<std::vector<int>> intSteps;
+
+
+
 };
 
 #endif // STUDENTWORLD_H_
