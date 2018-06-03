@@ -54,6 +54,8 @@ private:
 	int ticks_elapsed;
 	int ticksLeftToAnnoy;
 	int ticksToTurn;
+	int ticksToStun;
+
 };
 class Hardcore_Protester : public Regular_Protester {
 public:
