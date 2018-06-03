@@ -130,7 +130,7 @@ void IceMan::doSomething() {
 		if (initDir == dir && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
 			moveInDirection(dir);
 		}
-		else if (dir != none){
+		else if (dir != none) {
 			setDirection(dir);
 		}
 	}
@@ -150,7 +150,7 @@ int IceMan::getNumItems(ObjType obj) {
 	return itemArr[obj];
 }
 Regular_Protester::Regular_Protester(StudentWorld * swp) :
-	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200),
+	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200), ticksToStun(max(50, 100 - (static_cast<int>(swp->getLevel()) * 10))),
 	ticksToMove(max(0, 3 - static_cast<int>(swp->getLevel() / 4))), ticks_elapsed(0), ticksLeftToAnnoy(15) {}
 void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
@@ -163,31 +163,25 @@ void Regular_Protester::doSomething() {
 		setState(DEAD); //setState(TEMPORARY);
 		return;
 	}
-	if (heroNear) {
-		int x_dist = getSWP()->getHeroX() - x_coord;
-		int y_dist = getSWP()->getHeroY() - y_coord;
-		if (abs(x_dist) <= abs(y_dist) || getY() == 60 || getY() == 0) {  // only done when heroNear?
-			if (x_dist < 0) {
-				setDirection(left);
-			}
-			else {
-				setDirection(right);
-			}
+
+	if (getState() == FALLING) {
+		if (ticks_elapsed > 0) {
+			ticks_elapsed = -ticksToStun;
 		}
-		else {
-			if (y_dist < 0) {
-				setDirection(down);
-			}
-			else {
-				setDirection(up);
-			}
-		}
+		else if (ticks_elapsed < 0)
+			ticks_elapsed++;
+		else if (ticks_elapsed == 0)
+			setState(ALIVE);
+		return;			
 	}
+
 	if (ticks_elapsed % ticksToMove == 0) {
-		if (ticksLeftToAnnoy == 15 && heroNear) {
-			getSWP()->playSound(SOUND_PROTESTER_YELL);
-			getSWP()->annoyHero(x_coord, y_coord, PROTESTER);
-			ticksLeftToAnnoy--;
+		if (ticksLeftToAnnoy == 15 ) {
+			if (heroNear) {
+				getSWP()->playSound(SOUND_PROTESTER_YELL);
+				getSWP()->annoyHero(x_coord, y_coord, PROTESTER);
+				ticksLeftToAnnoy--;
+			}
 		}
 		else if (ticksLeftToAnnoy == 0) {
 			ticksLeftToAnnoy = 15;
@@ -250,14 +244,13 @@ void Regular_Protester::doSomething() {
 					updated_direction = getDirection();
 				}
 			}
-			else cout << "cannot change" << endl;
 			if (!turned && (stepsToTake == 0 || !getSWP()->emptySpace(x_coord, y_coord, getDirection()))) {
 				stepsToTake = (rand() % 53) + 8;
 				do {
 					updated_direction = static_cast<Direction>(rand() % 4 + 1);
+					cerr << "REG DO SOMETHING" << endl;
 				} while (!getSWP()->emptySpace(getX(), getY(), updated_direction));
 			}
-			cout << "new steps" << endl;
 			if (stepsToTake > 0) {
 				moveInDirection(updated_direction);
 				stepsToTake--;
@@ -365,6 +358,7 @@ void Gold_Nugget::doSomething() {
 		// FIX
 		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) { // FOR REG/HARDCORE PROTESTERS . DO IN PROTESTER CLASSES?
 			getSWP()->increaseScore(25);
+			getSWP()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 			setState(DEAD);
 		}
 		incrementTick();
