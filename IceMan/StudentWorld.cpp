@@ -116,19 +116,19 @@ bool StudentWorld::objectNearby(const int & x_coord, const int & y_coord, const 
 	return false;
 }
 bool StudentWorld::emptySpace(const int & x_coord, const int & y_coord, const GraphObject::Direction & face) { //coord from  rand(), will always be within boundaries for face = none
-if (IceAround(x_coord, y_coord, face)) {
-	return false;
-}
-int y = y_coord;
-int x = x_coord;
-switch (face) {
+	if (IceAround(x_coord, y_coord, face)) {
+		return false;
+	}
+	int y = y_coord;
+	int x = x_coord;
+	switch (face) {
 	case GraphObject::none:
 		for (int obj = GOLD; obj < PROTESTER; obj++) {
 			if (objectNearby(x_coord, y_coord, sizeOfObject, static_cast<ObjType>(obj))) {
 				return false;
 			}
-	}
-	break;
+		}
+		break;
 	case GraphObject::up:
 		y++;
 		break;
@@ -141,18 +141,11 @@ switch (face) {
 	case GraphObject::right:
 		x++;
 		break;
-}
-if (objectNearby(x, y, sizeOfObject, BOULDER)) {
-	return false;
-}
-return true;
-}
-bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
-	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
-		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
-			return true;
 	}
-	return false;
+	if (objectNearby(x, y, sizeOfObject, BOULDER)) {
+		return false;
+	}
+	return true;
 }
 void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
@@ -196,6 +189,13 @@ bool StudentWorld::IceAround(const int & x_coord, const int & y_coord, const Gra
 			IceBlocks[x_coord - 1][y_coord + 3] != nullptr);
 	}
 }
+bool StudentWorld::BoulderBelow(const int & x_coord, const int & y_coord) {
+	for (auto it = Objects[BOULDER].begin(); it != Objects[BOULDER].end(); it++) {
+		if (abs((*it)->getX() - x_coord) < 4 && y_coord == ((*it)->getY() + 4))
+			return true;
+	}
+	return false;
+}
 bool StudentWorld::all_Oil_Found() {
 	return Objects[OIL].size() == 0;
 }
@@ -236,14 +236,14 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 			end = y_coord;
 			flag = 4;
 		}
-		for (start;start!=end;start++) {
+		for (start; start != end; start++) {
 			if (!emptySpace(HeroX, start, GraphObject::none)) {
 				cerr << "NOT EMPTY COLUMN" << endl;
 				return false;
 			}
 		}
 	}
-	else if(HeroY != y_coord && HeroX != x_coord) {
+	else if (HeroY != y_coord && HeroX != x_coord) {
 		return false;
 	}
 	return true;
@@ -313,15 +313,15 @@ int StudentWorld::move() {
 				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
 		}
-		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
-			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0 ) {
+		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < 1//min(15, 2 + static_cast<int>(getLevel()*1.5))
+			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0) {
 			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
 			//int regOrHardcore = rand() % 100;
 			//if (regOrHardcore < 30) {
 			//	Objects[HARDCORE_PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 			//else {
-				Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
 			//}
 		}
 		game_ticks++;
