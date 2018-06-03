@@ -55,10 +55,11 @@ private:
 	int ticksLeftToAnnoy;
 	int ticksToTurn;
 };
-//class Hardcore_Protester : public Regular_Protester
-//{
-//public:
-//};
+class Hardcore_Protester : public Regular_Protester {
+public:
+	Hardcore_Protester(StudentWorld * swp);
+	virtual ~Hardcore_Protester() {};
+};
 class Thing : public Actor {
 public:
 	Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp = nullptr);
