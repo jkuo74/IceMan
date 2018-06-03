@@ -83,7 +83,7 @@ void IceMan::doSomething() {
 	if (getSWP()->getKey(ch)) {
 		int x_pos = getX();
 		int y_pos = getY();
-		Direction dir = getDirection();
+		Direction dir = none;
 		switch (ch) {
 		case KEY_PRESS_LEFT:
 			dir = left;
@@ -126,7 +126,7 @@ void IceMan::doSomething() {
 				getSWP()->objectNearby(x_pos, y_pos, 60.0, OIL);
 			}
 		}
-		if (!getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
+		if (dir != none && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER)) {
 			moveInDirection(dir);
 		}
 	}
@@ -157,7 +157,6 @@ void Regular_Protester::doSomething() {
 		setState(DEAD); //setState(TEMPORARY);
 		return;
 	}
-	cerr << ticksLeftToAnnoy << endl;
 	if (ticks_elapsed % ticksToMove == 0) {
 		if (ticksLeftToAnnoy == 15) {
 			if (heroNear){
@@ -189,7 +188,7 @@ void Regular_Protester::doSomething() {
 				moveInDirection(down);
 			}
 		}
-		if (!heroNear) {
+		else if (!heroNear) {
 			Direction  dir = getDirection();
 			if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
 				stepsToTake = (rand() % 53) + 8;
