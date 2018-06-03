@@ -146,25 +146,44 @@ int IceMan::getNumItems(ObjType obj) {
 	return itemArr[obj];
 }
 Regular_Protester::Regular_Protester(StudentWorld * swp) :
-	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0),
+	Person(IID_PROTESTER, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200),
 	ticksToMove(max(0, 3 - static_cast<int>(swp->getLevel() / 4))), ticks_elapsed(0), ticksLeftToAnnoy(15) {}
 void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
-	int x = getX();
-	int y = getY();
-	bool heroNear = getSWP()->personNearby(x, y, 4.0, 0, PROTESTER);
+	int x_coord = getX();
+	int y_coord = getY();
+	bool heroNear = getSWP()->personNearby(x_coord, y_coord, 4.0, 0, PROTESTER);
+	bool turned = false;
+	Direction ogDirection = getDirection();
 	if (getHealth() <= 0) {
 		setState(DEAD); //setState(TEMPORARY);
 		return;
 	}
-	if (ticks_elapsed % ticksToMove == 0) {
-		if (ticksLeftToAnnoy == 15) {
-			if (heroNear){
-				getSWP()->playSound(SOUND_PROTESTER_YELL);
-				getSWP()->annoyHero(x, y, PROTESTER);
-				ticksLeftToAnnoy--;
-				cerr << "annoyed her" << endl;
+	if (heroNear) {
+		int x_dist = getSWP()->getHeroX() - x_coord;
+		int y_dist = getSWP()->getHeroY() - y_coord;
+		if (abs(x_dist) <= abs(y_dist) || getY() == 60 || getY() == 0) {  // only done when heroNear?
+			if (x_dist < 0) {
+				setDirection(left);
 			}
+			else {
+				setDirection(right);
+			}
+		}
+		else {
+			if (y_dist < 0) {
+				setDirection(down);
+			}
+			else {
+				setDirection(up);
+			}
+		}
+	}
+	if (ticks_elapsed % ticksToMove == 0) {
+		if (ticksLeftToAnnoy == 15 && heroNear) {
+			getSWP()->playSound(SOUND_PROTESTER_YELL);
+			getSWP()->annoyHero(x_coord, y_coord, PROTESTER);
+			ticksLeftToAnnoy--;
 		}
 		else if (ticksLeftToAnnoy == 0) {
 			ticksLeftToAnnoy = 15;
@@ -173,33 +192,72 @@ void Regular_Protester::doSomething() {
 			ticksLeftToAnnoy--;
 		}
 		int flag = -1;
-		if (getSWP()->clearPath(getX(), getY(), flag)) {
-			cerr << "can see hero" << endl;
+		if (getSWP()->clearPath(x_coord, y_coord, flag)) {
 			if (flag == 1) {
-				moveInDirection(right);
+				setDirection(right);
 			}
 			else if (flag == 2) {
-				moveInDirection(left);
+				setDirection(left);
 			}
 			else if (flag == 3) {
-				moveInDirection(up);
+				setDirection(up);
 			}
 			else if (flag == 4) {
-				moveInDirection(down);
+				setDirection(down);
 			}
-		}
-		else if (!heroNear) {
-			Direction  dir = getDirection();
-			if (stepsToTake == 0 || !getSWP()->emptySpace(getX(), getY(), dir)) {
+		} 
+		if (!heroNear) {
+			Direction  updated_direction = getDirection();
+			if (ticksToTurn <= 0) {
+				int rand_direction = 0;
+				int new_direction = 0;
+				if (ogDirection == left || ogDirection == right) {
+					if (getSWP()->emptySpace(x_coord, y_coord, up)) {
+						rand_direction++;
+					}
+					if (getSWP()->emptySpace(x_coord, y_coord, down)) {
+						rand_direction += 2;
+					}
+					if (rand_direction == 3)
+						new_direction = (rand() % 2) + 1;
+					if (rand_direction == 1 || new_direction == 1)
+						setDirection(up);
+					else if (rand_direction == 2 || new_direction == 2)
+						setDirection(down);
+				}
+				else {
+					if (getSWP()->emptySpace(x_coord, y_coord, left)) {
+						rand_direction++;
+					}
+					if (getSWP()->emptySpace(x_coord, y_coord, right)) {
+						rand_direction += 2;
+					}
+					if (rand_direction == 3)
+						new_direction = (rand() % 2) + 1;
+					if (rand_direction == 1 || new_direction == 1)
+						setDirection(left);
+					else if (rand_direction == 2 || new_direction == 2)
+						setDirection(right);
+				}
+				if (rand_direction != 0) {
+					stepsToTake = (rand() % 53) + 8;
+					ticksToTurn = 200;
+					turned = true;
+					updated_direction = getDirection();
+				}
+			}
+			else cout << "cannot change" << endl;
+			if (!turned && (stepsToTake == 0 || !getSWP()->emptySpace(x_coord, y_coord, getDirection()))) {
 				stepsToTake = (rand() % 53) + 8;
 				do {
-					dir = static_cast<Direction>(rand() % 4 + 1);
-					//cerr << "REG DO  SOMETHING" << endl;
-				} while (!getSWP()->emptySpace(getX(), getY(), dir));
+					updated_direction = static_cast<Direction>(rand() % 4 + 1);
+				} while (!getSWP()->emptySpace(getX(), getY(), updated_direction));
 			}
+			cout << "new steps" << endl;
 			if (stepsToTake > 0) {
-				moveInDirection(dir);
+				moveInDirection(updated_direction);
 				stepsToTake--;
+				ticksToTurn--;
 			}
 		}
 	}
@@ -207,9 +265,8 @@ void Regular_Protester::doSomething() {
 		//
 	}
 	ticks_elapsed++;
+
 }
-
-
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp) {}
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp) :
@@ -289,10 +346,10 @@ void Gold_Nugget::doSomething() {
 		break;
 	case ALIVE:
 		if (!isVisible())
-			if (getSWP()->personNearby(getX(), getY(), 4.0, 0, GOLD)) // if hero nearby, make visible
+			if (getSWP()->personNearby(getX(), getY(), 4.0, 0, GOLD))
 				setVisibility(true);
 		if (isVisible()) {
-			if (getSWP()->personNearby(getX(), getY(), 3.0, 0, GOLD)) { // hero picks up gold
+			if (getSWP()->personNearby(getX(), getY(), 3.0, 0, GOLD)) {
 				getSWP()->playSound(SOUND_GOT_GOODIE);
 				setState(DEAD);
 				getSWP()->increaseScore(10);
@@ -302,7 +359,7 @@ void Gold_Nugget::doSomething() {
 		break;
 	case TEMPORARY:
 		// FIX
-		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) { // protester picks up  gold
+		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) { // FOR REG/HARDCORE PROTESTERS . DO IN PROTESTER CLASSES?
 			getSWP()->increaseScore(25);
 			setState(DEAD);
 		}
@@ -349,7 +406,7 @@ void Squirt::doSomething() {
 	int x_pos = getX();
 	int y_pos = getY();
 	GraphObject::Direction face = getDirection();
-	if (!getSWP()->IceAround(x_pos, y_pos, face) && !getSWP()->personNearby(x_pos, y_pos, 3.0, 1, SQUIRT) && !getSWP()->objectNearby(x_pos, y_pos, 3.0, BOULDER) && !timeUp()) {
+	if (getSWP()->emptySpace(x_pos, y_pos, face) && !getSWP()->personNearby(x_pos, y_pos, 3.0, 1, SQUIRT) && !timeUp()) {
 		switch (face) {
 		case left:
 			moveTo(x_pos - 1, y_pos);
