@@ -41,6 +41,7 @@ public:
 
 	void updateMap(int x, int y, ObjType id, GraphObject::Direction dir);
 	void path(int x, int y, GraphObject::Direction dir, int step);
+	void getNewMap();
 
 private:
 	int game_ticks;
