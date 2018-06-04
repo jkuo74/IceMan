@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include<thread>
 using namespace std;
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
@@ -303,9 +304,12 @@ int StudentWorld::move() {
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
+	std::thread* newMap = nullptr;
 	if (Hero->getHealth() > 0) {
-		if (game_ticks % 50 == 0){
-			//path(60, 60, GraphObject::none, 0);
+		if (game_ticks % 200 == 0){
+			cout << "new threading" << endl;
+			newMap = new std::thread(&StudentWorld::getNewMap, this);
+
 		}
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
@@ -343,6 +347,9 @@ int StudentWorld::move() {
 		}
 		game_ticks++;
 		updateDisplayText();
+		if(newMap != nullptr)
+			newMap->join();
+		delete(newMap);
 		return GWSTATUS_CONTINUE_GAME;
 	}
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
@@ -405,17 +412,21 @@ void StudentWorld::cleanUp() {
 		cerr << line.size() << "||||" << line.capacity() << endl;
 	}
 	Objects.clear();
+	for (int column = 0; column < maxelement + 1; column++) {
+		for (int row = 0; row < maxelement + 1; row++) {
+			if (intSteps[column][row] >= 0) {
+				intSteps[column][row] = -1;
+			}
+		}
+	}
 	path(60, 60, GraphObject::none, 0);
-	for (int column = 0; column < maxelement + 1; column++)
-	{
-		for (int row = 0; row <maxelement + 1; row++)
-		{
-			cout << setw(3) << intSteps[63 - row][63 - column];
+	for (int row = 63; row >= 0; row--){
+		for (int column = 0; column < maxelement + 1; column++){
+			cout << setw(3) << intSteps[column][row];
 		}
 		cout << endl;
 	}
 	intSteps.clear();
-
 }
 StudentWorld::~StudentWorld() {
 	cleanUp();
@@ -433,24 +444,24 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 			if (y <= 60){
 				if (intSteps[x][y + 3] == -2)
 					intSteps[x][y + 3] = -1;
-				if (intSteps[x - 1][y + 3] == -2)
-					intSteps[x - 1][y + 3] = -1;
-				if (intSteps[x - 2][y + 3] == -2)
-					intSteps[x - 2][y + 3] = -1;
-				if (intSteps[x - 3][y + 3] == -2)
-					intSteps[x - 3][y + 3] = -1;
+				if (intSteps[x + 1][y + 3] == -2)
+					intSteps[x + 1][y + 3] = -1;
+				if (intSteps[x + 2][y + 3] == -2)
+					intSteps[x + 2][y + 3] = -1;
+				if (intSteps[x + 3][y + 3] == -2)
+					intSteps[x + 3][y + 3] = -1;
 			}
 			break;
 		case GraphObject::down:
 			if (y >= 0) {
 				if (intSteps[x][y] == -2)
 					intSteps[x][y] = -1;
-				if (intSteps[x - 1][y] == -2)
-					intSteps[x - 1][y] = -1;
-				if (intSteps[x - 2][y] == -2)
-					intSteps[x - 2][y] = -1;
-				if (intSteps[x - 3][y] == -2)
-					intSteps[x - 3][y] = -1;
+				if (intSteps[x + 1][y] == -2)
+					intSteps[x + 1][y] = -1;
+				if (intSteps[x + 2][y] == -2)
+					intSteps[x + 2][y] = -1;
+				if (intSteps[x + 3][y] == -2)
+					intSteps[x + 3][y] = -1;
 			}
 			break;
 		case GraphObject::left:
@@ -467,14 +478,14 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 			break;
 		case GraphObject::right:
 			if (x <= 61) {
-				if (intSteps[x - 3][y] == -2)
-					intSteps[x - 3][y] = -1;
-				if (intSteps[x - 3][y + 1] == -2)
-					intSteps[x - 3][y + 1] = -1;
-				if (intSteps[x - 3][y + 2] == -2)
-					intSteps[x - 3][y + 2] = -1;
-				if (intSteps[x - 3][y + 3] == -2)
-					intSteps[x - 3][y + 3] = -1;
+				if (intSteps[x + 3][y] == -2)
+					intSteps[x + 3][y] = -1;
+				if (intSteps[x + 3][y + 1] == -2)
+					intSteps[x + 3][y + 1] = -1;
+				if (intSteps[x + 3][y + 2] == -2)
+					intSteps[x + 3][y + 2] = -1;
+				if (intSteps[x + 3][y + 3] == -2)
+					intSteps[x + 3][y + 3] = -1;
 				break;
 			}
 		default:
@@ -483,7 +494,7 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 		
 	}
 	else if (id == BOULDER) {
-		for (int column = x; column > x - 4; column--) {
+		for (int column = x; column < x + 4; column++) {
 			for (int row = y; row < y + 4; row++) {
 				intSteps[column][row] = -1;
 			}
@@ -492,16 +503,46 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 }
 void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step)
 {
-	if (intSteps[maxelement - x][y] == -1 || step < intSteps[maxelement - x][y])
-		intSteps[maxelement - x][y] = step;
-	else
-		return;
-	if (x > 0 && dir != GraphObject::left)
-		path(x - 1, y, GraphObject::right, step + 1);
-	if (x < intSteps.size() - 1 && dir != GraphObject::right)
-		path(x + 1, y, GraphObject::left, step + 1);
-	if (y > 0 && dir != GraphObject::down)
-		path(x, y - 1, GraphObject::up, step + 1);
-	if (y < intSteps[x].size() - 1 && dir != GraphObject::up)
-		path(x, y + 1, GraphObject::down, step + 1);
+	bool inaccessable = false;
+	if (x < (maxelement - 2) && y < (maxelement - 2)) {
+		if (intSteps[x][y] == -1 || step < intSteps[x][y]) {
+			for (int row = y; row < y + 4; row++) {
+				for (int column = x; column < x + 4; column++) {
+					if (intSteps[column][row] == -2) {
+						inaccessable = true;
+						break;
+					}
+				}
+				if (inaccessable) {
+					break;
+				}
+			}
+			if (!inaccessable) {
+				intSteps[x][y] = step;
+			}
+		}
+		else
+			return;
+		if (!inaccessable) {
+			if (x > 0 && dir != GraphObject::left)
+				path(x - 1, y, GraphObject::right, step + 1);
+			if (x < intSteps.size() - 1 && dir != GraphObject::right)
+				path(x + 1, y, GraphObject::left, step + 1);
+			if (y > 0 && dir != GraphObject::down)
+				path(x, y - 1, GraphObject::up, step + 1);
+			if (y < intSteps[x].size() - 1 && dir != GraphObject::up)
+				path(x, y + 1, GraphObject::down, step + 1);
+		}
+	}
+}
+
+void StudentWorld::getNewMap() {
+	for (int column = 0; column < maxelement + 1; column++) {
+		for (int row = 0; row < maxelement + 1; row++) {
+			if (intSteps[column][row] >= 0) {
+				intSteps[column][row] = -1;
+			}
+		}
+	}
+	path(60, 60, GraphObject::none, 0);
 }
