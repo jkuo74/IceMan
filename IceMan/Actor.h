@@ -45,7 +45,7 @@ private:
 
 class Regular_Protester : public Person {
 public:
-	Regular_Protester(const int & ID, StudentWorld * swp);
+	Regular_Protester(const int & ID, int hp, StudentWorld * swp);
 	virtual void doSomething();
 	virtual bool findIceman() { return false; };
 	virtual ~Regular_Protester() {};
