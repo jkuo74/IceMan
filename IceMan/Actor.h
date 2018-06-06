@@ -45,7 +45,7 @@ private:
 
 class Regular_Protester : public Person {
 public:
-	Regular_Protester(StudentWorld * swp);
+	Regular_Protester(const int & ID, StudentWorld * swp);
 	virtual void doSomething();
 	virtual ~Regular_Protester() {};
 private:
@@ -55,7 +55,6 @@ private:
 	int ticksLeftToAnnoy;
 	int ticksToTurn;
 	int ticksToStun;
-
 };
 class Hardcore_Protester : public Regular_Protester {
 public:
