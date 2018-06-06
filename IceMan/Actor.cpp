@@ -162,7 +162,6 @@ void Regular_Protester::doSomething() {
 	Direction ogDirection = getDirection();
 	if ( getState() != TEMPORARY && getHealth() <= 0) {
 		setState(TEMPORARY);
-		getSWP()->printMap();
 		return;
 	}
 
