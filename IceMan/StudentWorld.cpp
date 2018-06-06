@@ -392,6 +392,7 @@ void StudentWorld::updateDisplayText() {
 	setGameStatText(os.str());
 }
 void StudentWorld::cleanUp() {
+	game_ticks = 0;
 	newMap->join();
 	delete(newMap);
 	//printMap(intSteps);
