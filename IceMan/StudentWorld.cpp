@@ -83,7 +83,7 @@ int StudentWorld::init() {
 			n++;
 		}
 	}
-	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER, this));
+	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER, 5, this));
 	newMap = new thread(&StudentWorld::getNewMap, this, 60, 60);
 	heroMap = new thread(&StudentWorld::getHeroMap, this, 60, 60);
 	return GWSTATUS_CONTINUE_GAME;
@@ -348,7 +348,7 @@ int StudentWorld::move() {
 				Objects[HARDCORE_PROTESTER].push_back(make_unique<Hardcore_Protester>(this));
 			}
 			else {
-			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER, this));
+			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER,5, this));
 			}
 		}
 		game_ticks++;
