@@ -312,7 +312,7 @@ int StudentWorld::move() {
 		}
 		deleteDeadObjects();
 		Hero->doSomething();
-		if (game_ticks % 300 == 0) { //(rand() % (getLevel() * 25 + 300) == getLevel()) { 
+		if (rand() % (getLevel() * 25 + 300) == getLevel()) { 
 			int sonar_or_water = rand() % 5;
 			if (sonar_or_water == 0) {
 				Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
