@@ -23,18 +23,21 @@ int StudentWorld::init() {
 	Hero = std::make_shared<IceMan>(this);//add player
 	for (int column = 0; column < 64; column++) {
 		std::vector<Ice*> columns;
-		std::vector<int> columnsInt;
+		std::vector<int> columnsInt, columnsInt1;
 		for (int row = 0; row < 64; row++)
 			if (((column < initTunnelL || column > initTunnelR) || (row < 4)) && row < 60) {
 				columns.push_back(new Ice{ column,row });
 				columnsInt.push_back(-2);
+				columnsInt1.push_back(-2);
 			}
 			else {
 				columns.push_back(nullptr);
 				columnsInt.push_back(-1);
+				columnsInt1.push_back(-1);
 			}
 		IceBlocks.push_back(std::move(columns));
 		intSteps.push_back(std::move(columnsInt));
+		distHero.push_back(std::move(columnsInt1));
 	}
 	for (int n = 0; n < 8; n++) {
 		vector<unique_ptr<Actor>> temp_object;
@@ -80,8 +83,9 @@ int StudentWorld::init() {
 			n++;
 		}
 	}
-	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER,this));
+	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER, this));
 	newMap = new thread(&StudentWorld::getNewMap, this, 60, 60);
+	heroMap = new thread(&StudentWorld::getHeroMap, this, 60, 60);
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2) {
@@ -90,8 +94,9 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 	//ID1 == 2 check if either are nearby
 
 	if (ID1 == 1 || ID1 == 2) {
+		int type_of_protester = 0;
 		for (auto it = Objects.begin() + PROTESTER; it != Objects.end(); it++) {//loop will look only at protesters and hardcore protesters
-			for (auto it2 = it->begin(); it2 != it->end(); it2++)//iterate through all elements in sub-vector-level
+			for (auto it2 = it->begin(); it2 != it->end(); it2++) {//iterate through all elements in sub-vector-level
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= radius) { // distance is less than 6.0 or 3.0
 					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord) {//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 						(*it2)->annoy(100);
@@ -103,14 +108,22 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 						(*it2)->annoy(2);
 						(*it2)->setState(FALLING);
 						playSound(SOUND_PROTESTER_ANNOYED);
-						increaseScore(100);
 					}
 					if (ID2 == GOLD) {
-						(*it2)->setState(TEMPORARY);
+						if (type_of_protester == 0) {
+							(*it2)->setState(TEMPORARY);
+							increaseScore(25);
+						}
+						else {
+							increaseScore(50);
+							(*it2)->setState(FALLING);
+						}
 						//printMap();
 					}
 					return true;
 				}
+			}
+			++type_of_protester;
 		}
 	}
 	if ((ID1 == 0 || ID1 == 2) && sqrt(pow(Hero->getX() - x_coord, 2.0) + pow(Hero->getY() - y_coord, 2.0)) <= radius) {
@@ -224,7 +237,7 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 	if (HeroY == y_coord && HeroX == x_coord) {
 		flag = 0;
 	}
-	else if (HeroY == y_coord) {
+	else if (HeroY == y_coord) {//FFIX : check if equal & make sure ice man  is fully visible
 		if (x_coord < HeroX) { // hero to the right of x
 			start = x_coord;
 			end = HeroX;
@@ -241,7 +254,7 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 			}
 		}
 	}
-	else if (HeroX == x_coord) {
+	else if (HeroX == x_coord) {//FFIX : check if equal & make sure ice man  is fully visible
 		if (y_coord < HeroY) {  // hero above y
 			start = y_coord;
 			end = HeroY;
@@ -267,7 +280,7 @@ void StudentWorld::addItem(const ObjType & ID) {
 	Hero->addItem(ID);
 }
 void StudentWorld::annoyHero(const int & x_coord, const int & y_coord, const ObjType & type) {
-	if ((type == BOULDER) && Hero->getY() < y_coord && (abs(x_coord - Hero->getX()) < 4.0))//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
+	if ((type == BOULDER) && Hero->getY() < y_coord && (abs(x_coord-Hero->getX()) < 4.0))//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 		Hero->annoy(100);
 	if (type == PROTESTER || type == HARDCORE_PROTESTER) {
 		Hero->annoy(2);
@@ -301,7 +314,7 @@ void StudentWorld::dropItem(const ObjType & ID) {
 }
 int StudentWorld::move() {
 	if (all_Oil_Found()) {
-		Hero->annoy(20);
+		Hero->annoy(10);
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
@@ -335,7 +348,7 @@ int StudentWorld::move() {
 				Objects[HARDCORE_PROTESTER].push_back(make_unique<Hardcore_Protester>(this));
 			}
 			else {
-			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER,this));
+			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER, this));
 			}
 		}
 		game_ticks++;
@@ -381,8 +394,14 @@ void StudentWorld::updateDisplayText() {
 void StudentWorld::cleanUp() {
 	newMap->join();
 	delete(newMap);
-	//printMap();
+	//printMap(intSteps);
+
+	heroMap->join();
+	delete(heroMap);
+	//printMap(distHero);
+
 	intSteps.clear();
+	distHero.clear();
 	Hero = nullptr;
 	for (std::vector<Ice*> & line : IceBlocks) {
 		for (Ice* & block : line) {
@@ -414,7 +433,17 @@ GraphObject::Direction StudentWorld::getShortPath(const int & x_coord, const int
 	if (y_coord > 0 && intSteps[x_coord][y_coord - 1] != -1 && intSteps[x_coord][y_coord - 1] != -2 && intSteps[x_coord][y_coord - 1] == (intSteps[x_coord][y_coord] - 1))
 		return GraphObject::down;
 	return GraphObject::none;
-
+}
+GraphObject::Direction StudentWorld::getPathHero(const int & x_coord, const int & y_coord) {
+	if (x_coord > 0 && distHero[x_coord - 1][y_coord] != -1 && distHero[x_coord - 1][y_coord] != -2 && distHero[x_coord - 1][y_coord] == (distHero[x_coord][y_coord] - 1))
+		return GraphObject::left;
+	if (x_coord < 61 && distHero[x_coord + 1][y_coord] != -1 && distHero[x_coord + 1][y_coord] != -2 && distHero[x_coord + 1][y_coord] == (distHero[x_coord][y_coord] - 1))
+		return GraphObject::right;
+	if (y_coord < 61 && distHero[x_coord][y_coord + 1] != -1 && distHero[x_coord][y_coord + 1] != -2 && distHero[x_coord][y_coord + 1] == (distHero[x_coord][y_coord] - 1))
+		return GraphObject::up;
+	if (y_coord > 0 && distHero[x_coord][y_coord - 1] != -1 && distHero[x_coord][y_coord - 1] != -2 && distHero[x_coord][y_coord - 1] == (distHero[x_coord][y_coord] - 1))
+		return GraphObject::down;
+	return GraphObject::none;
 }
 void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction dir) {
 	if (id == ICEMAN)
@@ -425,70 +454,103 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 			break;
 		case GraphObject::up:
 			if (y <= 60) {
-				if (intSteps[x][y + 3] == -2)
+				if (intSteps[x][y + 3] == -2){
 					intSteps[x][y + 3] = -1;
-				if (intSteps[x + 1][y + 3] == -2)
+					distHero[x][y + 3] = -1;
+				}
+				if (intSteps[x + 1][y + 3] == -2) {
 					intSteps[x + 1][y + 3] = -1;
-				if (intSteps[x + 2][y + 3] == -2)
+					distHero[x+1][y + 3] = -1;
+				}
+				if (intSteps[x + 2][y + 3] == -2) {
 					intSteps[x + 2][y + 3] = -1;
-				if (intSteps[x + 3][y + 3] == -2)
+					distHero[x+2][y + 3] = -1;
+				}
+				if (intSteps[x + 3][y + 3] == -2) {
 					intSteps[x + 3][y + 3] = -1;
+					distHero[x+3][y + 3] = -1;
+				}
 			}
 			break;
 		case GraphObject::down:
 			if (y >= 0) {
-				if (intSteps[x][y] == -2)
+				if (intSteps[x][y] == -2) {
 					intSteps[x][y] = -1;
-				if (intSteps[x + 1][y] == -2)
+					distHero[x][y] = -1;
+				}
+				if (intSteps[x + 1][y] == -2) {
 					intSteps[x + 1][y] = -1;
-				if (intSteps[x + 2][y] == -2)
+					distHero[x + 1][y] = -1;
+				}
+				if (intSteps[x + 2][y] == -2){
 					intSteps[x + 2][y] = -1;
-				if (intSteps[x + 3][y] == -2)
+					distHero[x + 2][y] = -1;
+				}
+				if (intSteps[x + 3][y] == -2) {
 					intSteps[x + 3][y] = -1;
+					distHero[x + 3][y + 3] = -1;
+				}
 			}
 			break;
 		case GraphObject::left:
 			if (x >= 0) {
-				if (intSteps[x][y] == -2)
+				if (intSteps[x][y] == -2) {
 					intSteps[x][y] = -1;
-				if (intSteps[x][y + 1] == -2)
+					distHero[x][y] = -1;
+				}
+				if (intSteps[x][y + 1] == -2) {
 					intSteps[x][y + 1] = -1;
-				if (intSteps[x][y + 2] == -2)
+					distHero[x][y+1] = -1;
+				}
+				if (intSteps[x][y + 2] == -2) {
 					intSteps[x][y + 2] = -1;
-				if (intSteps[x][y + 3] == -2)
+					distHero[x][y+2] = -1;
+				}
+				if (intSteps[x][y + 3] == -2) {
 					intSteps[x][y + 3] = -1;
+					distHero[x][y+3] = -1;
+				}
 			}
 			break;
 		case GraphObject::right:
 			if (x <= 61) {
-				if (intSteps[x + 3][y] == -2)
+				if (intSteps[x + 3][y] == -2) {
 					intSteps[x + 3][y] = -1;
-				if (intSteps[x + 3][y + 1] == -2)
+					distHero[x+3][y] = -1;
+				}
+				if (intSteps[x + 3][y + 1] == -2) {
 					intSteps[x + 3][y + 1] = -1;
-				if (intSteps[x + 3][y + 2] == -2)
+					distHero[x + 3][y+1] = -1;
+				}
+				if (intSteps[x + 3][y + 2] == -2) {
 					intSteps[x + 3][y + 2] = -1;
-				if (intSteps[x + 3][y + 3] == -2)
+					distHero[x + 3][y+2] = -1;
+				}
+				if (intSteps[x + 3][y + 3] == -2) {
 					intSteps[x + 3][y + 3] = -1;
+					distHero[x + 3][y+3] = -1;
+				}
 				break;
 			}
 		default:
 			break;
 		}
-
+		
 	}
 	else if (id == BOULDER) {
 		for (int column = x; column < x + 4; column++) {
 			for (int row = y; row < y + 4; row++) {
 				intSteps[column][row] = -1;
+				distHero[column][row] = -1;
 			}
 		}
 	}
 }
-void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step) {
+void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step, std::vector<std::vector<int>> & map) {
 	bool inaccessable = false;
 
 	if (x < (maxelement - 2) && y < (maxelement - 2)) {
-		if (intSteps[x][y] == -1 || step < intSteps[x][y]) {
+		if (map[x][y] == -1 || step < map[x][y]) {
 			for (int row = y; row < y + 4; row++) {
 				for (int column = x; column < x + 4; column++) {
 					if (intSteps[column][row] == -2) {
@@ -501,24 +563,23 @@ void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step) {
 				}
 			}
 			if (!inaccessable) {
-				intSteps[x][y] = step;
+				map[x][y] = step;
 			}
 		}
 		else
 			return;
 		if (!inaccessable) {
 			if (x > 0 && dir != GraphObject::left)
-				path(x - 1, y, GraphObject::right, step + 1);
-			if (x < intSteps.size() - 1 && dir != GraphObject::right)
-				path(x + 1, y, GraphObject::left, step + 1);
+				path(x - 1, y, GraphObject::right, step + 1, map);
+			if (x < map.size() - 1 && dir != GraphObject::right)
+				path(x + 1, y, GraphObject::left, step + 1, map);
 			if (y > 0 && dir != GraphObject::down)
-				path(x, y - 1, GraphObject::up, step + 1);
-			if (y < intSteps[x].size() - 1 && dir != GraphObject::up)
-				path(x, y + 1, GraphObject::down, step + 1);
+				path(x, y - 1, GraphObject::up, step + 1, map);
+			if (y < map[x].size() - 1 && dir != GraphObject::up)
+				path(x, y + 1, GraphObject::down, step + 1, map);
 		}
 	}
 }
-
 void StudentWorld::getNewMap(const int & x_coord, const int & y_coord) {
 	bool doneOnce = false;
 	while (Hero->getHealth() > 0) {
@@ -531,19 +592,35 @@ void StudentWorld::getNewMap(const int & x_coord, const int & y_coord) {
 						}
 					}
 				}
-				path(x_coord, y_coord, GraphObject::none, 0);
+				path(x_coord, y_coord, GraphObject::none, 0, intSteps);
 				mapChanged = false;
 			}
 			doneOnce = true;
 		}
-		if (game_ticks % 10 == 1)
+		if(game_ticks % 10 == 1)
 			doneOnce = false;
 	}
 }
-void StudentWorld::printMap() {
+void StudentWorld::getHeroMap(const int & x_coord, const int & y_coord) {
+	while (Hero->getHealth() > 0) {
+		if (game_ticks % 20 == 0) {
+			for (int column = 0; column < maxelement + 1; column++) {
+				for (int row = 0; row < maxelement + 1; row++) {
+					if (distHero[column][row] >= 0) {
+						distHero[column][row] = -1;
+					}
+				}
+			}
+			path(Hero->getX(), Hero->getY(), GraphObject::none, 0, distHero);
+			//printMap(distHero);
+			//cout << endl;
+		}
+	}
+}
+void StudentWorld::printMap(std::vector<std::vector<int>> & map) {
 	for (int row = 63; row >= 0; row--) {
 		for (int column = 0; column < maxelement + 1; column++) {
-			cout << setw(3) << intSteps[column][row];
+			cout << setw(3) << map[column][row];
 		}
 		cout << endl;
 	}
