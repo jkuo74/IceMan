@@ -47,6 +47,7 @@ class Regular_Protester : public Person {
 public:
 	Regular_Protester(const int & ID, StudentWorld * swp);
 	virtual void doSomething();
+	virtual bool findIceman() { return false; };
 	virtual ~Regular_Protester() {};
 private:
 	int stepsToTake;
@@ -59,7 +60,10 @@ private:
 class Hardcore_Protester : public Regular_Protester {
 public:
 	Hardcore_Protester(StudentWorld * swp);
+	virtual bool findIceman();
 	virtual ~Hardcore_Protester() {};
+private:
+	int wifiStrength;
 };
 class Thing : public Actor {
 public:
