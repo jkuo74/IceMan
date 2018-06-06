@@ -41,10 +41,13 @@ public:
 	~StudentWorld();
 
 	GraphObject::Direction getShortPath(const int & x_coord, const int & y_coord);
+	GraphObject::Direction getPathHero(const int & x_coord, const int & y_coord);
+
 	void updateMap(int x, int y, ObjType id, GraphObject::Direction dir);
-	void path(int x, int y, GraphObject::Direction dir, int step);
+	void path(int x, int y, GraphObject::Direction dir, int step, std::vector<std::vector<int>> & map);
 	void getNewMap(const int & x_coord, const int & y_coord);
-	void printMap();
+	void getHeroMap(const int & x_coord, const int & y_coord);
+	void printMap(std::vector<std::vector<int>> & map);
 
 private:
 	int game_ticks;
@@ -54,7 +57,9 @@ private:
 	std::shared_ptr<IceMan> Hero;
 	std::vector<std::vector<std::unique_ptr<Actor>>> Objects;
 	std::vector<std::vector<int>> intSteps;
+	std::vector<std::vector<int>> distHero;
 	std::thread* newMap;
+	std::thread* heroMap;
 };
 
 #endif // STUDENTWORLD_H_
