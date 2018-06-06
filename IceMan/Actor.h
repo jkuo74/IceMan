@@ -49,6 +49,7 @@ public:
 	virtual void doSomething();
 	virtual bool findIceman() { return false; };
 	virtual ~Regular_Protester() {};
+	virtual void increaseScorePro();
 private:
 	int stepsToTake;
 	int ticksToMove;
@@ -61,6 +62,7 @@ class Hardcore_Protester : public Regular_Protester {
 public:
 	Hardcore_Protester(StudentWorld * swp);
 	virtual bool findIceman();
+	virtual void increaseScorePro();
 	virtual ~Hardcore_Protester() {};
 private:
 	int wifiStrength;
