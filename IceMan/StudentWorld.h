@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include <thread>
 #include<sstream>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
@@ -39,20 +40,21 @@ public:
 	static StudentWorld* getInstance();
 	~StudentWorld();
 
+	GraphObject::Direction getShortPath(const int & x_coord, const int & y_coord);
 	void updateMap(int x, int y, ObjType id, GraphObject::Direction dir);
 	void path(int x, int y, GraphObject::Direction dir, int step);
-	void getNewMap();
+	void getNewMap(const int & x_coord, const int & y_coord);
+	void printMap();
 
 private:
 	int game_ticks;
+	bool mapChanged;
 	static StudentWorld * SWP;
 	std::vector<std::vector<Ice*>> IceBlocks;
 	std::shared_ptr<IceMan> Hero;
 	std::vector<std::vector<std::unique_ptr<Actor>>> Objects;
 	std::vector<std::vector<int>> intSteps;
-
-
-
+	std::thread* newMap;
 };
 
 #endif // STUDENTWORLD_H_
