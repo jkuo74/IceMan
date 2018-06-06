@@ -149,8 +149,8 @@ int IceMan::getNumItems(ObjType obj) {
 		return -1;
 	return itemArr[obj];
 }
-Regular_Protester::Regular_Protester(const int & ID, StudentWorld * swp) :
-	Person(ID, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200), ticksToStun(max(50, 100- static_cast<int>(swp->getLevel()) * 10)),
+Regular_Protester::Regular_Protester(const int & ID, int hp, StudentWorld * swp) :
+	Person(ID, 60, 60, ALIVE, left, 1.0, 1, hp, swp), stepsToTake(0), ticksToTurn(200), ticksToStun(max(50, 100- static_cast<int>(swp->getLevel()) * 10)),
 	ticksToMove(max(0, 3 - static_cast<int>(swp->getLevel() / 4))), ticks_elapsed(0), ticksLeftToAnnoy(15) {}
 void Regular_Protester::increaseScorePro() {
 	getSWP()->increaseScore(100);
@@ -164,7 +164,7 @@ void Regular_Protester::doSomething() {
 	Direction ogDirection = getDirection();
 	if (getState() != TEMPORARY && getHealth() <= 0) {
 		getSWP()->playSound(SOUND_PROTESTER_GIVE_UP);
-		if (getHealth() > -10)
+		if (getHealth() == -1)
 			increaseScorePro();
 		setState(TEMPORARY);
 		return;
@@ -275,7 +275,7 @@ void Regular_Protester::doSomething() {
 	ticks_elapsed++;
 }
 Hardcore_Protester::Hardcore_Protester(StudentWorld * swp) :
-	Regular_Protester(IID_HARD_CORE_PROTESTER, swp), wifiStrength(16 + static_cast<int>(swp->getLevel()) * 2) {}
+	Regular_Protester(IID_HARD_CORE_PROTESTER, 20, swp), wifiStrength(16 + static_cast<int>(swp->getLevel()) * 2) {}
 bool Hardcore_Protester::findIceman() {
 	int x_coord = getX();
 	int y_coord = getY();
