@@ -76,7 +76,7 @@ void Person::moveInDirection(const GraphObject::Direction & dir) {
 	}
 }
 IceMan::IceMan(StudentWorld * swp) :
-	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 0, 1, 5 } {} 
+	Person(IID_PLAYER, 30, 60, ALIVE, right, 1.0, 0, 10, swp), itemArr{ 0, 1, 5 } {}
 void IceMan::doSomething() {
 	int ch;
 	getSWP()->removeIce(getX(), getY());
@@ -135,8 +135,7 @@ void IceMan::doSomething() {
 			setDirection(dir);
 		}
 	}
-}
-
+}	  
 void IceMan::addItem(ObjType obj) {
 	if (obj == WATER || obj == SQUIRT) {
 		itemArr[SQUIRT] += 5;
@@ -150,8 +149,8 @@ int IceMan::getNumItems(ObjType obj) {
 		return -1;
 	return itemArr[obj];
 }
-Regular_Protester::Regular_Protester(const int &  ID, StudentWorld * swp) :
-	Person(ID, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200),
+Regular_Protester::Regular_Protester(const int & ID, StudentWorld * swp) :
+	Person(ID, 60, 60, ALIVE, left, 1.0, 1, 5, swp), stepsToTake(0), ticksToTurn(200), ticksToStun(max(50, 100- static_cast<int>(swp->getLevel()) * 10)),
 	ticksToMove(max(0, 3 - static_cast<int>(swp->getLevel() / 4))), ticks_elapsed(0), ticksLeftToAnnoy(15) {}
 void Regular_Protester::doSomething() {
 	//	GraphOjbect:  enum Direction { none, up, down, left, right };
@@ -161,113 +160,129 @@ void Regular_Protester::doSomething() {
 	bool turned = false;
 	Direction ogDirection = getDirection();
 	if (getState() != TEMPORARY && getHealth() <= 0) {
+		getSWP()->playSound(SOUND_PROTESTER_GIVE_UP);
+		getSWP()->increaseScore(100); //FIX HARCORE PROTESTER SHOULD INCREASE 250
 		setState(TEMPORARY);
 		return;
 	}
 	if (ticks_elapsed % ticksToMove == 0) {
 		if (getState() == ALIVE) {
-		if (ticksLeftToAnnoy == 15) {
-			if (heroNear) {
-				getSWP()->playSound(SOUND_PROTESTER_YELL);
-				getSWP()->annoyHero(x_coord, y_coord, PROTESTER);
+			if (ticksLeftToAnnoy == 15) {
+				if (heroNear) {
+					getSWP()->playSound(SOUND_PROTESTER_YELL);
+					getSWP()->annoyHero(x_coord, y_coord, PROTESTER);
+					ticksLeftToAnnoy--;
+				}
+			}
+			else if (ticksLeftToAnnoy == 0) {
+				ticksLeftToAnnoy = 15;
+			}
+			else {
 				ticksLeftToAnnoy--;
 			}
-		}
-		else if (ticksLeftToAnnoy == 0) {
-			ticksLeftToAnnoy = 15;
-		}
-		else {
-			ticksLeftToAnnoy--;
-		}
-		int flag = -1;
-		if (getSWP()->clearPath(x_coord, y_coord, flag)) {
-			if (flag == 1) {
-				setDirection(right);
-			}
-			else if (flag == 2) {
-				setDirection(left);
-			}
-			else if (flag == 3) {
-				setDirection(up);
-			}
-			else if (flag == 4) {
-				setDirection(down);
-			}
-		}
-		if (!heroNear) {
-			Direction  updated_direction = getDirection();
-			if (ticksToTurn <= 0) {
-				int rand_direction = 0;
-				int new_direction = 0;
-				if (ogDirection == left || ogDirection == right) {
-					if (getSWP()->emptySpace(x_coord, y_coord, up)) {
-						rand_direction++;
-					}
-					if (getSWP()->emptySpace(x_coord, y_coord, down)) {
-						rand_direction += 2;
-					}
-					if (rand_direction == 3)
-						new_direction = (rand() % 2) + 1;
-					if (rand_direction == 1 || new_direction == 1)
-						setDirection(up);
-					else if (rand_direction == 2 || new_direction == 2)
-						setDirection(down);
+			int flag = -1;
+			if (getSWP()->clearPath(x_coord, y_coord, flag)) {
+				if (flag == 1) {
+					setDirection(right);
 				}
-				else {
-					if (getSWP()->emptySpace(x_coord, y_coord, left)) {
-						rand_direction++;
-					}
-					if (getSWP()->emptySpace(x_coord, y_coord, right)) {
-						rand_direction += 2;
-					}
-					if (rand_direction == 3)
-						new_direction = (rand() % 2) + 1;
-					if (rand_direction == 1 || new_direction == 1)
-						setDirection(left);
-					else if (rand_direction == 2 || new_direction == 2)
-						setDirection(right);
+				else if (flag == 2) {
+					setDirection(left);
 				}
-				if (rand_direction != 0) {
+				else if (flag == 3) {
+					setDirection(up);
+				}
+				else if (flag == 4) {
+					setDirection(down);
+				}
+			}
+			
+			if (!heroNear && !findIceman()) {
+				Direction  updated_direction = getDirection();
+				if (ticksToTurn <= 0) {
+					int rand_direction = 0;
+					int new_direction = 0;
+					if (ogDirection == left || ogDirection == right) {
+						if (getSWP()->emptySpace(x_coord, y_coord, up)) {
+							rand_direction++;
+						}
+						if (getSWP()->emptySpace(x_coord, y_coord, down)) {
+							rand_direction += 2;
+						}
+						if (rand_direction == 3)
+							new_direction = (rand() % 2) + 1;
+						if (rand_direction == 1 || new_direction == 1)
+							setDirection(up);
+						else if (rand_direction == 2 || new_direction == 2)
+							setDirection(down);
+					}
+					else {
+						if (getSWP()->emptySpace(x_coord, y_coord, left)) {
+							rand_direction++;
+						}
+						if (getSWP()->emptySpace(x_coord, y_coord, right)) {
+							rand_direction += 2;
+						}
+						if (rand_direction == 3)
+							new_direction = (rand() % 2) + 1;
+						if (rand_direction == 1 || new_direction == 1)
+							setDirection(left);
+						else if (rand_direction == 2 || new_direction == 2)
+							setDirection(right);
+					}
+					if (rand_direction != 0) {
+						stepsToTake = (rand() % 53) + 8;
+						ticksToTurn = 200;
+						turned = true;
+						updated_direction = getDirection();
+					}
+				}
+				if (!turned && (stepsToTake == 0 || !getSWP()->emptySpace(x_coord, y_coord, getDirection()))) {
 					stepsToTake = (rand() % 53) + 8;
-					ticksToTurn = 200;
-					turned = true;
-					updated_direction = getDirection();
+					do {
+						updated_direction = static_cast<Direction>(rand() % 4 + 1);
+					} while (!getSWP()->emptySpace(getX(), getY(), updated_direction));
+				}
+				if (stepsToTake > 0) {
+					moveInDirection(updated_direction);
+					stepsToTake--;
+					ticksToTurn--;
 				}
 			}
-			if (!turned && (stepsToTake == 0 || !getSWP()->emptySpace(x_coord, y_coord, getDirection()))) {
-				stepsToTake = (rand() % 53) + 8;
-				do {
-					updated_direction = static_cast<Direction>(rand() % 4 + 1);
-				} while (!getSWP()->emptySpace(getX(), getY(), updated_direction));
-			}
-			if (stepsToTake > 0) {
-				moveInDirection(updated_direction);
-				stepsToTake--;
-				ticksToTurn--;
-			}
 		}
-	}
-	if (getState() == FALLING) {
-		if (ticks_elapsed > 0) {
-			ticks_elapsed = -ticksToStun;
-		}
-		else if (ticks_elapsed < 0)
-			ticks_elapsed++;
-		else if (ticks_elapsed == 0)
-			setState(ALIVE);
-		return;
-	}
-	else if (getState() == TEMPORARY) {
-		if (x_coord == 60 && y_coord == 60) {
-			setState(DEAD);
+		if (getState() == FALLING) {
+			if (ticks_elapsed > 0) {
+				ticks_elapsed = -ticksToStun;
+			}
+			else if (ticks_elapsed < 0)
+				ticks_elapsed++;
+			else if (ticks_elapsed == 0)
+				setState(ALIVE);
 			return;
 		}
-		moveInDirection(getSWP()->getShortPath(x_coord, y_coord));
-	}
+		else if (getState() == TEMPORARY) {
+			if (x_coord == 60 && y_coord == 60) {
+				setState(DEAD);
+				return;
+			}
+			moveInDirection(getSWP()->getShortPath(x_coord, y_coord));
+		}
 	}
 	ticks_elapsed++;
 }
-Hardcore_Protester::Hardcore_Protester(StudentWorld * swp) : Regular_Protester(IID_HARD_CORE_PROTESTER, swp) {}
+Hardcore_Protester::Hardcore_Protester(StudentWorld * swp) :
+	Regular_Protester(IID_HARD_CORE_PROTESTER, swp), wifiStrength(16 + static_cast<int>(swp->getLevel()) * 2) {}
+bool Hardcore_Protester::findIceman() {
+	int x_coord = getX();
+	int y_coord = getY();
+	int heroX = getSWP()->getHeroX();
+	int heroY = getSWP()->getHeroY();
+	double distance = sqrt(pow(heroX - x_coord, 2.0) + pow(heroY - y_coord, 2.0));
+	if (getState() == ALIVE && distance <= 16.0) {
+		moveInDirection(getSWP()->getPathHero(x_coord, y_coord));
+		return true;
+	}
+	return false;
+}
 Thing::Thing(const int & ID, const int & x_coord, const int & y_coord, const STATE & st, const GraphObject::Direction & face, const double & size, const unsigned int & depth, StudentWorld * swp) :
 	Actor(ID, x_coord, y_coord, st, face, size, depth, swp) {}
 Ice::Ice(const int & x_coord, const int & y_coord, StudentWorld * swp) :
@@ -361,8 +376,8 @@ void Gold_Nugget::doSomething() {
 		}
 		break;
 	case TEMPORARY:
-		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) { 
-			getSWP()->increaseScore(25);
+		if (getSWP()->personNearby(getX(), getY(), 3.0, 1, GOLD)) {
+			//getSWP()->increaseScore(25);
 			getSWP()->playSound(SOUND_PROTESTER_FOUND_GOLD);
 			setState(DEAD);
 		}
@@ -397,7 +412,6 @@ void Water_Pool::doSomething() {
 			setState(DEAD);
 			getSWP()->playSound(SOUND_GOT_GOODIE);
 			getSWP()->addItem(SQUIRT);
-			cerr << "WATER PICKED UP" << endl;
 		}
 		if (timeUp())
 			setState(DEAD);
