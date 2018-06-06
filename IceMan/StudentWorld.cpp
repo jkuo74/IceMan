@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include<thread>
+//#include<thread>
 using namespace std;
 StudentWorld * StudentWorld::SWP;
 const static int initTunnelL = 30;
@@ -10,7 +10,7 @@ const static int initTunnelR = 33;
 const static int sizeOfObject = 4;
 const static int maxelement = 63;
 StudentWorld::StudentWorld(string assetDir) :
-	GameWorld(assetDir), game_ticks(0) {
+	GameWorld(assetDir), game_ticks(0), mapChanged(false) {
 	SWP = this;
 }
 GameWorld * createStudentWorld(string assetDir) {
@@ -51,7 +51,6 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER)) {
 			Objects[BOULDER].push_back(std::make_unique<Boulder>(x_rand, y_rand, this));
 			removeIce(x_rand, y_rand);
-			//cerr << "BOULDERS (" << x_rand << "," << y_rand << ")" << endl;
 			n++;
 		}
 	}//add boulders
@@ -66,7 +65,6 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD)) {
 			Objects[GOLD].push_back(std::make_unique<Gold_Nugget>(x_rand, y_rand, ALIVE, this));
 			n++;
-			//cerr << "GOLD (" << x_rand << "," << y_rand << ")" << endl;
 		}
 	} // add gold
 	int num_oil_barrels = min(2 + static_cast<int>(getLevel()), 21);
@@ -80,10 +78,10 @@ int StudentWorld::init() {
 		if (!objectNearby(x_rand, y_rand, 6.0, BOULDER) && !objectNearby(x_rand, y_rand, 6.0, GOLD) && !objectNearby(x_rand, y_rand, 6.0, OIL)) {
 			Objects[OIL].push_back(std::make_unique<Oil_Barrel>(x_rand, y_rand, ALIVE, this));
 			n++;
-			//cerr << "OIL (" << x_rand << "," << y_rand << ")" << endl;
 		}
 	}
 	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+	newMap = new thread(&StudentWorld::getNewMap, this, 60, 60);
 	return GWSTATUS_CONTINUE_GAME;
 }
 bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const double & radius, const int & ID1, const ObjType & ID2) {
@@ -107,8 +105,10 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 						playSound(SOUND_PROTESTER_ANNOYED);
 						increaseScore(100);
 					}
-					if (ID2 == GOLD)
+					if (ID2 == GOLD) {
 						(*it2)->setState(TEMPORARY);
+						//printMap();
+					}
 					return true;
 				}
 		}
@@ -166,6 +166,8 @@ void StudentWorld::removeIce(const int & x_coord, const int & y_coord) {
 	for (int n = x_coord; n < x_coord + 4; n++)
 		for (int m = y_coord; m < y_coord + 4; m++)
 			if (IceBlocks[n][m] != nullptr) {
+				if (!mapChanged)
+					mapChanged = true;
 				playSound(IID_ICE);
 				delete IceBlocks[n][m];
 				IceBlocks[n][m] = nullptr;
@@ -235,7 +237,6 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 		}
 		for (start; start != end; start++) {
 			if (!emptySpace(start, HeroY, GraphObject::none)) {
-				cerr << "NOT EMPTY ROW" << endl;
 				return false;
 			}
 		}
@@ -253,7 +254,6 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 		}
 		for (start; start != end; start++) {
 			if (!emptySpace(HeroX, start, GraphObject::none)) {
-				cerr << "NOT EMPTY COLUMN" << endl;
 				return false;
 			}
 		}
@@ -301,16 +301,11 @@ void StudentWorld::dropItem(const ObjType & ID) {
 }
 int StudentWorld::move() {
 	if (all_Oil_Found()) {
+		Hero->annoy(20);
 		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
 	}
-	std::thread* newMap = nullptr;
 	if (Hero->getHealth() > 0) {
-		if (game_ticks % 200 == 0){
-			cout << "new threading" << endl;
-			newMap = new std::thread(&StudentWorld::getNewMap, this);
-
-		}
 		for (auto it = Objects.begin(); it != Objects.end(); it++) {
 			for (auto it2 = it->begin(); it2 != it->end(); it2++)
 				(*it2)->doSomething();
@@ -321,7 +316,6 @@ int StudentWorld::move() {
 			int sonar_or_water = rand() % 5;
 			if (sonar_or_water == 0) {
 				Objects[SONAR].push_back(make_unique<Sonar_Kit>(this));
-				cerr << "SONAR ADDED" << endl;
 			}
 			else {
 				int x;
@@ -331,7 +325,6 @@ int StudentWorld::move() {
 					y = rand() % 60;
 				} while (!emptySpace(x, y, GraphObject::none));
 				Objects[WATER].push_back(make_unique<Water_Pool>(x, y, this));
-				cerr << "WATER ADDED  (" << x << "," << y << ")" << endl;
 			}
 		}
 		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
@@ -347,9 +340,6 @@ int StudentWorld::move() {
 		}
 		game_ticks++;
 		updateDisplayText();
-		if(newMap != nullptr)
-			newMap->join();
-		delete(newMap);
 		return GWSTATUS_CONTINUE_GAME;
 	}
 	// This code is here merely to allow the game to build, run, and terminate after you hit enter a few times.
@@ -363,11 +353,9 @@ void StudentWorld::deleteDeadObjects() {
 		auto it2 = it->begin();
 		while (it2 != it->end()) {
 			if (!(*it2)->isAlive()) {
-				cerr << it->size() << "|unchanged|" << it->capacity() << endl;
 				(*it2).reset();
 				auto b = (*it).erase(it2);
 				it2 = b;
-				cerr << it->size() << "|reseted|" << it->capacity() << endl;
 			}
 			else {
 				it2++;
@@ -391,6 +379,10 @@ void StudentWorld::updateDisplayText() {
 	setGameStatText(os.str());
 }
 void StudentWorld::cleanUp() {
+	newMap->join();
+	delete(newMap);
+	//printMap();
+	intSteps.clear();
 	Hero = nullptr;
 	for (std::vector<Ice*> & line : IceBlocks) {
 		for (Ice* & block : line) {
@@ -400,39 +392,30 @@ void StudentWorld::cleanUp() {
 		line.clear();
 	}
 	IceBlocks.clear();
-	cerr << "cleanup" << endl;
 	for (auto & line : Objects) {
 		for (auto & block : line) {
-			cerr << line.size() << "|" << line.capacity() << endl;
 			block.reset(nullptr);
-			cerr << line.size() << "||" << line.capacity() << endl;
 		}
-		cerr << line.size() << "|||" << line.capacity() << endl;
 		line.clear();
-		cerr << line.size() << "||||" << line.capacity() << endl;
 	}
 	Objects.clear();
-	for (int column = 0; column < maxelement + 1; column++) {
-		for (int row = 0; row < maxelement + 1; row++) {
-			if (intSteps[column][row] >= 0) {
-				intSteps[column][row] = -1;
-			}
-		}
-	}
-	path(60, 60, GraphObject::none, 0);
-	for (int row = 63; row >= 0; row--){
-		for (int column = 0; column < maxelement + 1; column++){
-			cout << setw(3) << intSteps[column][row];
-		}
-		cout << endl;
-	}
-	intSteps.clear();
 }
 StudentWorld::~StudentWorld() {
 	cleanUp();
 }
 
+GraphObject::Direction StudentWorld::getShortPath(const int & x_coord, const int & y_coord) {
+	if (x_coord > 0 && intSteps[x_coord - 1][y_coord] != -1 && intSteps[x_coord - 1][y_coord] != -2 && intSteps[x_coord - 1][y_coord] == (intSteps[x_coord][y_coord] - 1))
+		return GraphObject::left;
+	if (x_coord < 61 && intSteps[x_coord + 1][y_coord] != -1 && intSteps[x_coord + 1][y_coord] != -2 && intSteps[x_coord + 1][y_coord] == (intSteps[x_coord][y_coord] - 1))
+		return GraphObject::right;
+	if (y_coord < 61 && intSteps[x_coord][y_coord + 1] != -1 && intSteps[x_coord][y_coord + 1] != -2 && intSteps[x_coord][y_coord + 1] == (intSteps[x_coord][y_coord] - 1))
+		return GraphObject::up;
+	if (y_coord > 0 && intSteps[x_coord][y_coord - 1] != -1 && intSteps[x_coord][y_coord - 1] != -2 && intSteps[x_coord][y_coord - 1] == (intSteps[x_coord][y_coord] - 1))
+		return GraphObject::down;
+	return GraphObject::none;
 
+}
 void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction dir) {
 	if (id == ICEMAN)
 	{
@@ -501,9 +484,9 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 		}
 	}
 }
-void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step)
-{
+void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step) {
 	bool inaccessable = false;
+
 	if (x < (maxelement - 2) && y < (maxelement - 2)) {
 		if (intSteps[x][y] == -1 || step < intSteps[x][y]) {
 			for (int row = y; row < y + 4; row++) {
@@ -536,13 +519,32 @@ void StudentWorld::path(int x, int y, GraphObject::Direction dir, int step)
 	}
 }
 
-void StudentWorld::getNewMap() {
-	for (int column = 0; column < maxelement + 1; column++) {
-		for (int row = 0; row < maxelement + 1; row++) {
-			if (intSteps[column][row] >= 0) {
-				intSteps[column][row] = -1;
+void StudentWorld::getNewMap(const int & x_coord, const int & y_coord) {
+	bool doneOnce = false;
+	while (Hero->getHealth() > 0) {
+		if (game_ticks % 10 == 0 && !doneOnce) {
+			if (mapChanged) {
+				for (int column = 0; column < maxelement + 1; column++) {
+					for (int row = 0; row < maxelement + 1; row++) {
+						if (intSteps[column][row] >= 0) {
+							intSteps[column][row] = -1;
+						}
+					}
+				}
+				path(x_coord, y_coord, GraphObject::none, 0);
+				mapChanged = false;
 			}
+			doneOnce = true;
 		}
+		if(game_ticks % 10 == 1)
+			doneOnce = false;
 	}
-	path(60, 60, GraphObject::none, 0);
+}
+void StudentWorld::printMap() {
+	for (int row = 63; row >= 0; row--) {
+		for (int column = 0; column < maxelement + 1; column++) {
+			cout << setw(3) << intSteps[column][row];
+		}
+		cout << endl;
+	}
 }
