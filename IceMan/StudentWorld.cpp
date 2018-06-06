@@ -80,7 +80,7 @@ int StudentWorld::init() {
 			n++;
 		}
 	}
-	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
+	Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER,this));
 	newMap = new thread(&StudentWorld::getNewMap, this, 60, 60);
 	return GWSTATUS_CONTINUE_GAME;
 }
@@ -95,7 +95,7 @@ bool StudentWorld::personNearby(const int & x_coord, const int & y_coord, const 
 				if (sqrt(pow((*it2)->getX() - x_coord, 2.0) + pow((*it2)->getY() - y_coord, 2.0)) <= radius) { // distance is less than 6.0 or 3.0
 					if ((ID2 == BOULDER) && (*it2)->getY() < y_coord) {//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 						(*it2)->annoy(100);
-						increaseScore(500);	
+						increaseScore(500);
 						playSound(SOUND_PROTESTER_ANNOYED);
 
 					}
@@ -224,7 +224,7 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 	if (HeroY == y_coord && HeroX == x_coord) {
 		flag = 0;
 	}
-	else if (HeroY == y_coord) {//FFIX : check if equal & make sure ice man  is fully visible
+	else if (HeroY == y_coord) {
 		if (x_coord < HeroX) { // hero to the right of x
 			start = x_coord;
 			end = HeroX;
@@ -241,7 +241,7 @@ bool StudentWorld::clearPath(const int & x_coord, const int & y_coord, int & fla
 			}
 		}
 	}
-	else if (HeroX == x_coord) {//FFIX : check if equal & make sure ice man  is fully visible
+	else if (HeroX == x_coord) {
 		if (y_coord < HeroY) {  // hero above y
 			start = y_coord;
 			end = HeroY;
@@ -267,7 +267,7 @@ void StudentWorld::addItem(const ObjType & ID) {
 	Hero->addItem(ID);
 }
 void StudentWorld::annoyHero(const int & x_coord, const int & y_coord, const ObjType & type) {
-	if ((type == BOULDER) && Hero->getY() < y_coord && (abs(x_coord-Hero->getX()) < 4.0))//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
+	if ((type == BOULDER) && Hero->getY() < y_coord && (abs(x_coord - Hero->getX()) < 4.0))//if ID equals 5 it will check for any protestors or hardcore protestors that are below the boulder that is falling
 		Hero->annoy(100);
 	if (type == PROTESTER || type == HARDCORE_PROTESTER) {
 		Hero->annoy(2);
@@ -329,14 +329,14 @@ int StudentWorld::move() {
 		}
 		if (Objects[PROTESTER].size() + Objects[HARDCORE_PROTESTER].size() < min(15, 2 + static_cast<int>(getLevel()*1.5))
 			&& game_ticks != 0 && game_ticks % max(25, 200 - static_cast<int>(getLevel())) == 0) {
-			//int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
-			//int regOrHardcore = rand() % 100;
-			//if (regOrHardcore < 30) {
-			//	Objects[HARDCORE_PROTESTER].push_back(make_unique<Regular_Protester>(this));
-			//}
-			//else {
-			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(this));
-			//}
+			int probabilityOfHardcore = min(90, static_cast<int>(getLevel()) * 10 + 30);
+			int regOrHardcore = rand() % 100;
+			if (regOrHardcore < 30) {
+				Objects[HARDCORE_PROTESTER].push_back(make_unique<Hardcore_Protester>(this));
+			}
+			else {
+			Objects[PROTESTER].push_back(make_unique<Regular_Protester>(IID_PROTESTER,this));
+			}
 		}
 		game_ticks++;
 		updateDisplayText();
@@ -424,7 +424,7 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 		case GraphObject::none:
 			break;
 		case GraphObject::up:
-			if (y <= 60){
+			if (y <= 60) {
 				if (intSteps[x][y + 3] == -2)
 					intSteps[x][y + 3] = -1;
 				if (intSteps[x + 1][y + 3] == -2)
@@ -474,7 +474,7 @@ void StudentWorld::updateMap(int x, int y, ObjType id, GraphObject::Direction di
 		default:
 			break;
 		}
-		
+
 	}
 	else if (id == BOULDER) {
 		for (int column = x; column < x + 4; column++) {
@@ -536,7 +536,7 @@ void StudentWorld::getNewMap(const int & x_coord, const int & y_coord) {
 			}
 			doneOnce = true;
 		}
-		if(game_ticks % 10 == 1)
+		if (game_ticks % 10 == 1)
 			doneOnce = false;
 	}
 }
